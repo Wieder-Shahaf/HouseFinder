@@ -119,22 +119,16 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
+| DATA-01 | Phase 1 | Pending |
+| DATA-02 | Phase 1 | Pending |
+| INFRA-01 | Phase 1 | Pending |
+| INFRA-02 | Phase 1 | Pending |
+| INFRA-03 | Phase 1 | Pending |
+| INFRA-04 | Phase 1 | Pending |
 | YAD2-01 | Phase 2 | Pending |
 | YAD2-02 | Phase 2 | Pending |
 | YAD2-03 | Phase 2 | Pending |
 | YAD2-04 | Phase 2 | Pending |
-| MADL-01 | Phase 6 | Pending |
-| MADL-02 | Phase 6 | Pending |
-| MADL-03 | Phase 6 | Pending |
-| FBGR-01 | Phase 8 | Pending |
-| FBGR-02 | Phase 8 | Pending |
-| FBGR-03 | Phase 8 | Pending |
-| FBGR-04 | Phase 8 | Pending |
-| FBGR-05 | Phase 8 | Pending |
-| FBMP-01 | Phase 8 | Pending |
-| FBMP-02 | Phase 8 | Pending |
-| FBMP-03 | Phase 8 | Pending |
-| FBMP-04 | Phase 8 | Pending |
 | LLM-01 | Phase 2 | Pending |
 | LLM-02 | Phase 2 | Pending |
 | LLM-03 | Phase 2 | Pending |
@@ -144,11 +138,6 @@
 | SCHED-01 | Phase 3 | Pending |
 | SCHED-02 | Phase 3 | Pending |
 | SCHED-03 | Phase 3 | Pending |
-| DATA-01 | Phase 1 | Pending |
-| DATA-02 | Phase 1 | Pending |
-| DATA-03 | Phase 5 | Pending |
-| DATA-04 | Phase 5 | Pending |
-| DATA-05 | Phase 5 | Pending |
 | MAP-01 | Phase 4 | Pending |
 | MAP-02 | Phase 4 | Pending |
 | MAP-03 | Phase 4 | Pending |
@@ -157,20 +146,31 @@
 | MAP-06 | Phase 4 | Pending |
 | MAP-07 | Phase 4 | Pending |
 | MAP-08 | Phase 4 | Pending |
+| DATA-03 | Phase 5 | Pending |
+| DATA-04 | Phase 5 | Pending |
+| DATA-05 | Phase 5 | Pending |
+| MADL-01 | Phase 6 | Pending |
+| MADL-02 | Phase 6 | Pending |
+| MADL-03 | Phase 6 | Pending |
 | NOTF-01 | Phase 7 | Pending |
 | NOTF-02 | Phase 7 | Pending |
 | NOTF-03 | Phase 7 | Pending |
 | NOTF-04 | Phase 7 | Pending |
-| INFRA-01 | Phase 1 | Pending |
-| INFRA-02 | Phase 1 | Pending |
-| INFRA-03 | Phase 1 | Pending |
-| INFRA-04 | Phase 1 | Pending |
+| FBGR-01 | Phase 8 | Pending |
+| FBGR-02 | Phase 8 | Pending |
+| FBGR-03 | Phase 8 | Pending |
+| FBGR-04 | Phase 8 | Pending |
+| FBGR-05 | Phase 8 | Pending |
+| FBMP-01 | Phase 8 | Pending |
+| FBMP-02 | Phase 8 | Pending |
+| FBMP-03 | Phase 8 | Pending |
+| FBMP-04 | Phase 8 | Pending |
 
 **Coverage:**
 - v1 requirements: 44 total
-- Mapped to phases: 38
+- Mapped to phases: 44/44 ✓
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-28*
-*Last updated: 2026-03-28 after initial definition*
+*Last updated: 2026-03-28 — traceability updated after roadmap creation*
