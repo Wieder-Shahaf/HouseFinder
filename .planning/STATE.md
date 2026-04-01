@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Completed 01-foundation plan 02 (frontend scaffold + Docker Compose)
-last_updated: "2026-04-01T16:37:56.031Z"
+last_updated: "2026-04-01T20:52:03.243Z"
 last_activity: 2026-04-01
 progress:
   total_phases: 8
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
   percent: 67
 ---
 
@@ -25,8 +25,8 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 
 ## Current Position
 
-Phase: 01 (foundation) — EXECUTING
-Plan: 2 of 3
+Phase: 2
+Plan: Not started
 Status: Ready to execute
 Last activity: 2026-04-01
 
@@ -69,6 +69,8 @@ Recent decisions affecting current work:
 - [Phase 01-foundation]: Alembic render_as_batch=True required in env.py for SQLite ALTER TABLE compatibility
 - [Phase 01-foundation]: React 19 + Vite 8 + Tailwind v4 used (not older CLAUDE.md floor versions); Tailwind v4 CSS-based config (@import tailwindcss + @theme), no tailwind.config.js
 - [Phase 01-foundation]: Docker Compose multi-file: base defines services; dev adds hot-reload; prod adds Nginx+Certbot SSL termination
+- [Phase 01-foundation]: VPS provider = DigitalOcean EU (Amsterdam/Frankfurt) using $200 GitHub Student Pack credit. Israeli IP not required — Facebook Marketplace geo-filtering is URL-based, not IP-enforced. Israeli proxy deferred to Phase 8 if needed in practice.
+- [Phase 01-foundation]: Droplet size = $6/mo (1 CPU, 1GB RAM, 25GB SSD) + 2GB swap file to handle Playwright memory spikes. Upgrade to $12/mo if needed.
 
 ### Pending Todos
 
