@@ -54,8 +54,8 @@ Plans:
 **Plans**: 4 plans
 Plans:
 - [~] 02-01-PLAN.md — Config + scraper types + test scaffolds + Yad2 API DevTools verification (Tasks 1+2 done; Task 3 awaiting DevTools findings)
-- [ ] 02-02-PLAN.md — Yad2 scraper implementation (httpx + Playwright fallback)
-- [ ] 02-03-PLAN.md — LLM verification pipeline (verify, batch, merge)
+- [x] 02-02-PLAN.md — Yad2 scraper implementation (httpx + Playwright fallback)
+- [x] 02-03-PLAN.md — LLM verification pipeline (verify, batch, merge)
 - [ ] 02-04-PLAN.md — Integration: wire scraper to LLM pipeline + end-to-end tests
 **Research flag**: Yad2 internal API endpoint URL and parameters must be verified via browser DevTools at build time — training data may be stale.
 

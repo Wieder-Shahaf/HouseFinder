@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-yad2-scraper-llm-pipeline Plan 01 (02-01-PLAN.md)
-last_updated: "2026-04-01T22:27:45.486Z"
+stopped_at: Completed 02-yad2-scraper-llm-pipeline Plan 03 (02-03-PLAN.md)
+last_updated: "2026-04-01T22:36:44.322Z"
 last_activity: 2026-04-01
 progress:
   total_phases: 8
   completed_phases: 1
   total_plans: 7
-  completed_plans: 4
+  completed_plans: 6
   percent: 67
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 02 (yad2-scraper-llm-pipeline) — EXECUTING
-Plan: 2 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-04-01
 
@@ -55,6 +55,8 @@ Progress: [██████░░░░] 67%
 | Phase 01-foundation P01 | 5min | 2 tasks | 19 files |
 | Phase 01-foundation P02 | 2min | 2 tasks | 14 files |
 | Phase 02-yad2-scraper-llm-pipeline P01 | 30 | 3 tasks | 9 files |
+| Phase 02-yad2-scraper-llm-pipeline P03 | 10 | 1 tasks | 2 files |
+| Phase 02-yad2-scraper-llm-pipeline P02 | 6 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -75,6 +77,9 @@ Recent decisions affecting current work:
 - [Phase 02-yad2-scraper-llm-pipeline]: Yad2 feed endpoint hypothesis kept as-is (gw.yad2.co.il/feed-search/realestate/rent) — to verify at runtime
 - [Phase 02-yad2-scraper-llm-pipeline]: Dual neighborhood filter strategy: API param neighborhood=609 for כרמל (confirmed), post-scrape address.neighborhood.text match for מרכז העיר and נווה שאנן (codes unknown)
 - [Phase 02-yad2-scraper-llm-pipeline]: Yad2 guest_token JWT cookie required for API access — Plan 02 must acquire before calling feed endpoint
+- [Phase 02-yad2-scraper-llm-pipeline]: get_llm_client() factory function extracted for mockability — tests patch this instead of anthropic module directly
+- [Phase 02-yad2-scraper-llm-pipeline]: AsyncAnthropic used for non-blocking event loop behavior inside asyncio.gather batch calls
+- [Phase 02-yad2-scraper-llm-pipeline]: output_config.format json_schema for structured LLM output — no retry logic needed
 
 ### Pending Todos
 
@@ -89,6 +94,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-01T22:27:45.483Z
-Stopped at: Completed 02-yad2-scraper-llm-pipeline Plan 01 (02-01-PLAN.md)
+Last session: 2026-04-01T22:36:20.633Z
+Stopped at: Completed 02-yad2-scraper-llm-pipeline Plan 03 (02-03-PLAN.md)
 Resume file: None
