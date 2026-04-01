@@ -14,5 +14,18 @@ class Settings(BaseSettings):
     llm_api_key: str = ""
     app_url: str = "http://localhost:8000"
 
+    # LLM verification settings (Phase 2)
+    llm_confidence_threshold: float = 0.7
+    llm_model: str = "claude-haiku-4-5"
+
+    # Yad2 scraper settings (Phase 2) — endpoint hypothesis, confirmed in Task 3 DevTools checkpoint
+    yad2_api_base_url: str = "https://gw.yad2.co.il/feed-search/realestate/rent"
+    yad2_price_max: int = 4500
+    yad2_city_code: str = "4000"
+    yad2_neighborhoods: list[str] = ["כרמל", "מרכז העיר", "נווה שאנן"]
+    # Confirmed via DevTools (2026-04-02): neighborhood=609 maps to כרמל
+    # מרכז העיר and נווה שאנן IDs not captured — use post-scrape address.neighborhood.text filter
+    yad2_neighborhood_id_carmel: int = 609
+
 
 settings = Settings()
