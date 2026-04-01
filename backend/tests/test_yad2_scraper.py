@@ -2,6 +2,9 @@
 
 Tests use real async DB sessions (in-memory SQLite) and mock httpx/Playwright
 to verify scraper behavior without hitting live Yad2 endpoints.
+
+After Plan 04 integration, batch_verify_listings is also mocked so tests
+remain deterministic regardless of LLM availability.
 """
 
 import pytest
@@ -74,7 +77,7 @@ EXPENSIVE_LISTING = {
 
 @pytest.mark.asyncio
 async def test_scraper_returns_haifa_listings_filtered_by_neighborhood_and_price(
-    db_session,
+    db_session, llm_valid_rental_response,
 ):
     """YAD2-01: Only target-neighborhood listings (כרמל) are inserted; non-target (קריית חיים)
     and over-budget listings are discarded."""
@@ -90,7 +93,10 @@ async def test_scraper_returns_haifa_listings_filtered_by_neighborhood_and_price
     mock_client.get = AsyncMock(return_value=mock_http_response)
 
     with patch("app.scrapers.yad2.httpx.AsyncClient", return_value=mock_client):
-        result = await run_yad2_scraper(db_session)
+        with patch("app.scrapers.yad2.batch_verify_listings",
+                   new_callable=AsyncMock,
+                   return_value=[llm_valid_rental_response]) as mock_batch:
+            result = await run_yad2_scraper(db_session)
 
     # Only the CARMEL listing passes both filters
     assert result.listings_found == 1, f"Expected 1 found, got {result.listings_found}"
@@ -107,7 +113,7 @@ async def test_scraper_returns_haifa_listings_filtered_by_neighborhood_and_price
 
 
 @pytest.mark.asyncio
-async def test_scraper_extracts_all_required_fields(db_session):
+async def test_scraper_extracts_all_required_fields(db_session, llm_valid_rental_response):
     """YAD2-02: All required listing fields are extracted and persisted correctly."""
     mock_response = make_yad2_response([CARMEL_LISTING])
 
@@ -121,7 +127,10 @@ async def test_scraper_extracts_all_required_fields(db_session):
     mock_client.get = AsyncMock(return_value=mock_http_response)
 
     with patch("app.scrapers.yad2.httpx.AsyncClient", return_value=mock_client):
-        result = await run_yad2_scraper(db_session)
+        with patch("app.scrapers.yad2.batch_verify_listings",
+                   new_callable=AsyncMock,
+                   return_value=[llm_valid_rental_response]):
+            result = await run_yad2_scraper(db_session)
 
     assert result.success is True
 
@@ -162,7 +171,11 @@ async def test_scraper_error_isolation_returns_scraper_result(db_session):
         # Also patch Playwright fallback to also raise so we test full error isolation
         with patch("app.scrapers.yad2.fetch_yad2_browser", new_callable=AsyncMock,
                    side_effect=Exception("Playwright also failed")):
-            result = await run_yad2_scraper(db_session)
+            # batch_verify_listings should not be called if fetch fails,
+            # but patch it in case error path changes
+            with patch("app.scrapers.yad2.batch_verify_listings",
+                       new_callable=AsyncMock, return_value=[]):
+                result = await run_yad2_scraper(db_session)
 
     assert result.success is False
     assert len(result.errors) > 0
@@ -175,7 +188,7 @@ async def test_scraper_error_isolation_returns_scraper_result(db_session):
 
 
 @pytest.mark.asyncio
-async def test_playwright_fallback_on_httpx_403(db_session):
+async def test_playwright_fallback_on_httpx_403(db_session, llm_valid_rental_response):
     """YAD2-03: When httpx returns 403, Playwright fallback is invoked and listings are returned."""
     import httpx
 
@@ -197,7 +210,10 @@ async def test_playwright_fallback_on_httpx_403(db_session):
     with patch("app.scrapers.yad2.httpx.AsyncClient", return_value=mock_client):
         with patch("app.scrapers.yad2.fetch_yad2_browser", new_callable=AsyncMock,
                    return_value=browser_listings):
-            result = await run_yad2_scraper(db_session)
+            with patch("app.scrapers.yad2.batch_verify_listings",
+                       new_callable=AsyncMock,
+                       return_value=[llm_valid_rental_response]):
+                result = await run_yad2_scraper(db_session)
 
     assert result.success is True
     assert result.listings_found >= 1, f"Expected listings_found >= 1, got {result.listings_found}"
