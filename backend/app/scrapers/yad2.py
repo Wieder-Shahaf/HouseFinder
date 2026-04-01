@@ -21,6 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 from app.config import settings
+from app.llm.verifier import batch_verify_listings, merge_llm_fields
 from app.models.listing import Listing
 from app.scrapers.base import ScraperResult
 
@@ -327,14 +328,15 @@ async def insert_listings(db: AsyncSession, listings: list[dict]) -> tuple[int, 
 
 
 async def run_yad2_scraper(db: AsyncSession) -> ScraperResult:
-    """Fetch Yad2 listings, filter, parse, and upsert to DB.
+    """Fetch Yad2 listings, verify with LLM, merge fields, and upsert to DB.
 
-    - Tries httpx API path first.
-    - Falls back to Playwright+stealth on 403/429/connection errors.
-    - Applies neighborhood filter (is_in_target_neighborhood) on all paths.
-    - Price filter: excludes listings above settings.yad2_price_max.
-    - DB upsert: on_conflict_do_nothing for silent deduplication.
-    - Catches all exceptions; returns ScraperResult.success=False on error.
+    Pipeline:
+      1. Fetch listings via httpx API (falls back to Playwright on errors).
+      2. Neighborhood filter — discard listings outside target areas.
+      3. Parse and price-filter all feed items.
+      4. LLM batch verification — reject non-rentals, flag low-confidence.
+      5. Merge LLM-extracted fields with scraper fields (scraper wins on non-null).
+      6. DB upsert — on_conflict_do_nothing for deduplication.
 
     Returns ScraperResult with counts and any error messages.
     """
@@ -343,6 +345,7 @@ async def run_yad2_scraper(db: AsyncSession) -> ScraperResult:
     try:
         feed_items: list[dict] = []
 
+        # Step 1: Fetch listings (httpx or Playwright fallback)
         try:
             api_data = await fetch_yad2_api()
             feed_items = api_data.get("feed", {}).get("feed_items", [])
@@ -362,7 +365,7 @@ async def run_yad2_scraper(db: AsyncSession) -> ScraperResult:
         if discarded:
             logger.info(f"[yad2] Filtered {discarded} listings outside target neighborhoods")
 
-        # Parse fields + price filter
+        # Step 2: Parse fields + price filter
         parsed: list[dict] = []
         for item in feed_items:
             listing = parse_listing(item)
@@ -376,19 +379,59 @@ async def run_yad2_scraper(db: AsyncSession) -> ScraperResult:
         result.listings_found = len(parsed)
 
         if parsed:
-            inserted, skipped = await insert_listings(db, parsed)
+            # Step 3: LLM batch verification (D-03: after full scrape batch, not per-listing)
+            # raw_data is always set by parse_listing (JSON of original feed item)
+            raw_texts = [p.get("raw_data") or str(p) for p in parsed]
+            logger.info(f"[llm] Verifying {len(raw_texts)} listings with {settings.llm_model}")
+            llm_results = await batch_verify_listings(raw_texts)
+
+            # Step 4: Process LLM results — reject, flag, merge
+            verified_listings: list[dict] = []
+            for scraper_data, llm_data in zip(parsed, llm_results):
+                if not llm_data.get("is_rental", False):
+                    # LLM-01: Reject non-rental posts
+                    result.listings_rejected += 1
+                    logger.debug(f"[llm] Rejected: {llm_data.get('rejection_reason', 'unknown')}")
+                    continue
+
+                # LLM-04: Merge LLM fields with scraper fields (scraper non-null wins)
+                merged = merge_llm_fields(scraper_data, llm_data)
+
+                confidence = llm_data.get("confidence", 0.0)
+                merged["llm_confidence"] = confidence
+
+                if confidence < settings.llm_confidence_threshold:
+                    # LLM-03: Flag low confidence — still insert (D-02: not deleted)
+                    result.listings_flagged += 1
+                    logger.debug(
+                        f"[llm] Flagged (confidence {confidence:.2f} < {settings.llm_confidence_threshold})"
+                    )
+
+                verified_listings.append(merged)
+
+            accepted = len(verified_listings)
+            logger.info(
+                f"[llm] {accepted} accepted, {result.listings_rejected} rejected, "
+                f"{result.listings_flagged} flagged (confidence < {settings.llm_confidence_threshold})"
+            )
+
+            # Step 5: Insert verified listings to DB
+            inserted, skipped = await insert_listings(db, verified_listings)
             result.listings_inserted = inserted
             result.listings_skipped = skipped
+        else:
+            logger.info("[yad2] No listings found to verify")
 
         logger.info(
             f"[yad2] Run complete: {result.listings_inserted} inserted, "
-            f"{result.listings_skipped} skipped (duplicates)"
+            f"{result.listings_skipped} skipped (duplicates), "
+            f"{result.listings_rejected} rejected, {result.listings_flagged} flagged"
         )
 
     except Exception as e:
         result.success = False
         result.errors.append(str(e))
-        logger.error(f"[yad2] Scraper error: {e}", exc_info=True)
+        logger.error(f"[yad2] ERROR: {e} — scraper exiting cleanly")
 
     return result
 
