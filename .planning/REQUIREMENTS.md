@@ -7,10 +7,10 @@
 
 ### Scraping — Yad2
 
-- [ ] **YAD2-01**: Scraper fetches active rental listings in Haifa filtered by neighborhoods (Carmel, Downtown, Neve Shanan) and price ≤ 4,500 ₪
-- [ ] **YAD2-02**: Scraper extracts: title, price, rooms, size (sqm), address, contact info, post date, listing URL
-- [ ] **YAD2-03**: Scraper runs via Playwright (stealth) to bypass bot detection
-- [ ] **YAD2-04**: Scraper failure is isolated — Yad2 error does not block other scrapers
+- [x] **YAD2-01**: Scraper fetches active rental listings in Haifa filtered by neighborhoods (Carmel, Downtown, Neve Shanan) and price ≤ 4,500 ₪
+- [x] **YAD2-02**: Scraper extracts: title, price, rooms, size (sqm), address, contact info, post date, listing URL
+- [x] **YAD2-03**: Scraper runs via Playwright (stealth) to bypass bot detection
+- [x] **YAD2-04**: Scraper failure is isolated — Yad2 error does not block other scrapers
 
 ### Scraping — Madlan
 
@@ -35,12 +35,12 @@
 
 ### LLM Verification
 
-- [ ] **LLM-01**: Each scraped post is passed through an LLM to verify it is an actual rental listing (not a "looking for apartment" post, not a sale, not spam)
-- [ ] **LLM-02**: LLM extracts and normalizes structured fields from free-form Hebrew text: price, rooms, size, address, contact info, availability date
-- [ ] **LLM-03**: LLM assigns a confidence score to each extraction; listings below threshold are flagged and excluded from the map
-- [ ] **LLM-04**: LLM-extracted fields override or supplement scraper-extracted fields when the scraper returns incomplete data (especially for Facebook free-form posts)
-- [ ] **LLM-05**: LLM verification runs asynchronously after scraping — does not block the scraper pipeline
-- [ ] **LLM-06**: Model used is configurable (default: Claude claude-haiku-4-5 for cost efficiency at high volume)
+- [x] **LLM-01**: Each scraped post is passed through an LLM to verify it is an actual rental listing (not a "looking for apartment" post, not a sale, not spam)
+- [x] **LLM-02**: LLM extracts and normalizes structured fields from free-form Hebrew text: price, rooms, size, address, contact info, availability date
+- [x] **LLM-03**: LLM assigns a confidence score to each extraction; listings below threshold are flagged and excluded from the map
+- [x] **LLM-04**: LLM-extracted fields override or supplement scraper-extracted fields when the scraper returns incomplete data (especially for Facebook free-form posts)
+- [x] **LLM-05**: LLM verification runs asynchronously after scraping — does not block the scraper pipeline
+- [x] **LLM-06**: Model used is configurable (default: Claude claude-haiku-4-5 for cost efficiency at high volume)
 
 ### Scheduler
 
@@ -125,16 +125,16 @@
 | INFRA-02 | Phase 1 | Pending |
 | INFRA-03 | Phase 1 | Complete |
 | INFRA-04 | Phase 1 | Complete |
-| YAD2-01 | Phase 2 | Pending |
-| YAD2-02 | Phase 2 | Pending |
-| YAD2-03 | Phase 2 | Pending |
-| YAD2-04 | Phase 2 | Pending |
-| LLM-01 | Phase 2 | Pending |
-| LLM-02 | Phase 2 | Pending |
-| LLM-03 | Phase 2 | Pending |
-| LLM-04 | Phase 2 | Pending |
-| LLM-05 | Phase 2 | Pending |
-| LLM-06 | Phase 2 | Pending |
+| YAD2-01 | Phase 2 | Complete |
+| YAD2-02 | Phase 2 | Complete |
+| YAD2-03 | Phase 2 | Complete |
+| YAD2-04 | Phase 2 | Complete |
+| LLM-01 | Phase 2 | Complete |
+| LLM-02 | Phase 2 | Complete |
+| LLM-03 | Phase 2 | Complete |
+| LLM-04 | Phase 2 | Complete |
+| LLM-05 | Phase 2 | Complete |
+| LLM-06 | Phase 2 | Complete |
 | SCHED-01 | Phase 3 | Pending |
 | SCHED-02 | Phase 3 | Pending |
 | SCHED-03 | Phase 3 | Pending |
