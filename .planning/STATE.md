@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-yad2-scraper-llm-pipeline Plan 03 (02-03-PLAN.md)
-last_updated: "2026-04-01T22:36:44.322Z"
+stopped_at: Completed 02-yad2-scraper-llm-pipeline Plan 02 (02-02-PLAN.md)
+last_updated: "2026-04-01T22:36:57.027Z"
 last_activity: 2026-04-01
 progress:
   total_phases: 8
@@ -80,6 +80,8 @@ Recent decisions affecting current work:
 - [Phase 02-yad2-scraper-llm-pipeline]: get_llm_client() factory function extracted for mockability — tests patch this instead of anthropic module directly
 - [Phase 02-yad2-scraper-llm-pipeline]: AsyncAnthropic used for non-blocking event loop behavior inside asyncio.gather batch calls
 - [Phase 02-yad2-scraper-llm-pipeline]: output_config.format json_schema for structured LLM output — no retry logic needed
+- [Phase 02-yad2-scraper-llm-pipeline]: guest_token preflight: GET yad2.co.il/realestate/rent before feed API to acquire JWT cookie — best-effort, continues without on failure
+- [Phase 02-yad2-scraper-llm-pipeline]: from __future__ import annotations added to yad2.py for Python 3.9 union type syntax compatibility
 
 ### Pending Todos
 
@@ -94,6 +96,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-01T22:36:20.633Z
-Stopped at: Completed 02-yad2-scraper-llm-pipeline Plan 03 (02-03-PLAN.md)
+Last session: 2026-04-01T22:36:57.025Z
+Stopped at: Completed 02-yad2-scraper-llm-pipeline Plan 02 (02-02-PLAN.md)
 Resume file: None
