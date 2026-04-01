@@ -1,0 +1,24 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:////data/listings.db
+    env_file:
+      - .env
+    volumes:
+      - sqlite_data:/data
+    networks:
+      - app_network
+
+  frontend:
+    build:
+      context: ./frontend
+    networks:
+      - app_network
+
+volumes:
+  sqlite_data:
+
+networks:
+  app_network:
