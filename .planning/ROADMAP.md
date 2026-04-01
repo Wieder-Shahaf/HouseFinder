@@ -51,7 +51,12 @@ Plans:
   3. LLM verification rejects "looking for apartment" posts, sale listings, and spam — they do not appear in the database
   4. Listings below the LLM confidence threshold are excluded from the map view (flagged in the database, not deleted)
   5. A Yad2 scraper failure (network error, selector break) is caught in isolation — the process exits cleanly with an error log entry rather than crashing the pipeline
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 02-01-PLAN.md — Config + scraper types + test scaffolds + Yad2 API DevTools verification
+- [ ] 02-02-PLAN.md — Yad2 scraper implementation (httpx + Playwright fallback)
+- [ ] 02-03-PLAN.md — LLM verification pipeline (verify, batch, merge)
+- [ ] 02-04-PLAN.md — Integration: wire scraper to LLM pipeline + end-to-end tests
 **Research flag**: Yad2 internal API endpoint URL and parameters must be verified via browser DevTools at build time — training data may be stale.
 
 ### Phase 3: REST API + Scheduler
@@ -130,7 +135,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 1/3 | In Progress|  |
-| 2. Yad2 Scraper + LLM Pipeline | 0/TBD | Not started | - |
+| 2. Yad2 Scraper + LLM Pipeline | 0/4 | Planned | - |
 | 3. REST API + Scheduler | 0/TBD | Not started | - |
 | 4. Map Web UI | 0/TBD | Not started | - |
 | 5. Geocoding + Dedup + Neighborhoods | 0/TBD | Not started | - |
