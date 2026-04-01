@@ -78,7 +78,7 @@
 
 - [ ] **INFRA-01**: App is deployed to a public URL accessible via smartphone browser
 - [ ] **INFRA-02**: Server is hosted in Israel (required for Facebook Marketplace geo-filtering)
-- [ ] **INFRA-03**: Backend and frontend run via Docker Compose for simple deployment
+- [x] **INFRA-03**: Backend and frontend run via Docker Compose for simple deployment
 - [ ] **INFRA-04**: No authentication required — single user, direct access to the app URL
 
 ## v2 Requirements
@@ -123,7 +123,7 @@
 | DATA-02 | Phase 1 | Pending |
 | INFRA-01 | Phase 1 | Pending |
 | INFRA-02 | Phase 1 | Pending |
-| INFRA-03 | Phase 1 | Pending |
+| INFRA-03 | Phase 1 | Complete |
 | INFRA-04 | Phase 1 | Pending |
 | YAD2-01 | Phase 2 | Pending |
 | YAD2-02 | Phase 2 | Pending |
