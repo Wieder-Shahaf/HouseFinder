@@ -37,7 +37,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   5. `.env` pattern is in place for all secrets (Twilio credentials, LLM API key, scraper config)
 **Plans**: 3 plans
 Plans:
-- [ ] 01-01-PLAN.md — Backend skeleton: FastAPI + SQLAlchemy models + Alembic migrations + test scaffold
+- [x] 01-01-PLAN.md — Backend skeleton: FastAPI + SQLAlchemy models + Alembic migrations + test scaffold
 - [x] 01-02-PLAN.md — Frontend scaffold: React 19 + Vite 8 + Tailwind v4 + Docker Compose files
 - [ ] 01-03-PLAN.md — VPS deployment + DNS + SSL + Twilio WhatsApp setup
 

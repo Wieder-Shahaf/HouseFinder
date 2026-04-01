@@ -4,14 +4,14 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Completed 01-foundation plan 02 (frontend scaffold + Docker Compose)
-last_updated: "2026-04-01T16:35:37.986Z"
+last_updated: "2026-04-01T16:37:56.031Z"
 last_activity: 2026-04-01
 progress:
   total_phases: 8
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
-  percent: 0
+  completed_plans: 2
+  percent: 67
 ---
 
 # Project State
@@ -30,13 +30,13 @@ Plan: 2 of 3
 Status: Ready to execute
 Last activity: 2026-04-01
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██████░░░░] 67%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 0
+- Total plans completed: 2
 - Average duration: -
 - Total execution time: 0 hours
 
@@ -52,7 +52,8 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: -
 
 *Updated after each plan completion*
-| Phase 01-foundation P02 | 2 | 2 tasks | 14 files |
+| Phase 01-foundation P01 | 5min | 2 tasks | 19 files |
+| Phase 01-foundation P02 | 2min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -64,6 +65,8 @@ Recent decisions affecting current work:
 - [Roadmap]: Stack confirmed — Python/FastAPI/SQLite/APScheduler backend; React+Vite+Tailwind+React-Leaflet frontend; Playwright+stealth for all scrapers (including Yad2/Madlan, not just Facebook)
 - [Roadmap]: Facebook scrapers deferred to Phase 8 — core app must be fully functional on Yad2+Madlan alone
 - [Roadmap]: LLM verification co-located with Phase 2 (first scraper) to validate pipeline end-to-end before API or UI depend on it
+- [Phase 01-foundation]: Used latest available PyPI versions (fastapi==0.128.8, alembic==1.16.5, pydantic==2.12.5) — plan research referenced future unreleased versions
+- [Phase 01-foundation]: Alembic render_as_batch=True required in env.py for SQLite ALTER TABLE compatibility
 - [Phase 01-foundation]: React 19 + Vite 8 + Tailwind v4 used (not older CLAUDE.md floor versions); Tailwind v4 CSS-based config (@import tailwindcss + @theme), no tailwind.config.js
 - [Phase 01-foundation]: Docker Compose multi-file: base defines services; dev adds hot-reload; prod adds Nginx+Certbot SSL termination
 
@@ -80,6 +83,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-01T16:35:37.983Z
+Last session: 2026-04-01T16:37:56.028Z
 Stopped at: Completed 01-foundation plan 02 (frontend scaffold + Docker Compose)
 Resume file: None

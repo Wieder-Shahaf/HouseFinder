@@ -50,8 +50,8 @@
 
 ### Storage & Data
 
-- [ ] **DATA-01**: All listings stored in SQLite database with normalized schema
-- [ ] **DATA-02**: Same-source deduplication: a listing already stored by its source ID is not inserted again
+- [x] **DATA-01**: All listings stored in SQLite database with normalized schema
+- [x] **DATA-02**: Same-source deduplication: a listing already stored by its source ID is not inserted again
 - [ ] **DATA-03**: Cross-source deduplication: listings from different sources that share price + room count + similar coordinates are merged into one record
 - [ ] **DATA-04**: Each listing is geocoded (Hebrew address → lat/lng) via Nominatim; geocoding is done asynchronously and does not block scraper runs
 - [ ] **DATA-05**: Listings are tagged with neighborhood (Carmel, Downtown, Neve Shanan) based on geocoded coordinates
@@ -79,7 +79,7 @@
 - [ ] **INFRA-01**: App is deployed to a public URL accessible via smartphone browser
 - [ ] **INFRA-02**: Server is hosted in Israel (required for Facebook Marketplace geo-filtering)
 - [x] **INFRA-03**: Backend and frontend run via Docker Compose for simple deployment
-- [ ] **INFRA-04**: No authentication required — single user, direct access to the app URL
+- [x] **INFRA-04**: No authentication required — single user, direct access to the app URL
 
 ## v2 Requirements
 
@@ -119,12 +119,12 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | Phase 1 | Pending |
-| DATA-02 | Phase 1 | Pending |
+| DATA-01 | Phase 1 | Complete |
+| DATA-02 | Phase 1 | Complete |
 | INFRA-01 | Phase 1 | Pending |
 | INFRA-02 | Phase 1 | Pending |
 | INFRA-03 | Phase 1 | Complete |
-| INFRA-04 | Phase 1 | Pending |
+| INFRA-04 | Phase 1 | Complete |
 | YAD2-01 | Phase 2 | Pending |
 | YAD2-02 | Phase 2 | Pending |
 | YAD2-03 | Phase 2 | Pending |
