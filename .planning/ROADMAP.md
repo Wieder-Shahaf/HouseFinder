@@ -33,9 +33,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. `docker compose up` starts backend and frontend containers without errors on a clean machine
   2. Alembic migration runs and produces the listings table with all required columns (source, source_id, lat, lng, is_seen, is_favorited, raw_data, llm_confidence, dedup_fingerprint)
   3. Same-source deduplication constraint (UNIQUE on source + source_id) is enforced at the DB level — inserting a duplicate row raises an integrity error
-  4. App is accessible at a public URL (Israeli VPS provisioned, DNS configured)
+  4. App is accessible at a public URL (DigitalOcean droplet provisioned via GitHub Student Pack $200 credit — free; Israeli datacenter region selected; DNS configured via free Namecheap .me domain from Student Pack)
   5. `.env` pattern is in place for all secrets (Twilio credentials, LLM API key, scraper config)
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 01-01-PLAN.md — Backend skeleton: FastAPI + SQLAlchemy models + Alembic migrations + test scaffold
+- [ ] 01-02-PLAN.md — Frontend scaffold: React 19 + Vite 8 + Tailwind v4 + Docker Compose files
+- [ ] 01-03-PLAN.md — VPS deployment + DNS + SSL + Twilio WhatsApp setup
 
 ### Phase 2: Yad2 Scraper + LLM Pipeline
 **Goal**: Real Haifa rental listings flow from Yad2 into the database, verified and normalized by the LLM pipeline
@@ -125,7 +129,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/TBD | Not started | - |
+| 1. Foundation | 0/3 | Planned | - |
 | 2. Yad2 Scraper + LLM Pipeline | 0/TBD | Not started | - |
 | 3. REST API + Scheduler | 0/TBD | Not started | - |
 | 4. Map Web UI | 0/TBD | Not started | - |
