@@ -53,7 +53,7 @@ Plans:
   5. A Yad2 scraper failure (network error, selector break) is caught in isolation — the process exits cleanly with an error log entry rather than crashing the pipeline
 **Plans**: 4 plans
 Plans:
-- [ ] 02-01-PLAN.md — Config + scraper types + test scaffolds + Yad2 API DevTools verification
+- [~] 02-01-PLAN.md — Config + scraper types + test scaffolds + Yad2 API DevTools verification (Tasks 1+2 done; Task 3 awaiting DevTools findings)
 - [ ] 02-02-PLAN.md — Yad2 scraper implementation (httpx + Playwright fallback)
 - [ ] 02-03-PLAN.md — LLM verification pipeline (verify, batch, merge)
 - [ ] 02-04-PLAN.md — Integration: wire scraper to LLM pipeline + end-to-end tests

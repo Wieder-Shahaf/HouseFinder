@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-foundation plan 02 (frontend scaffold + Docker Compose)
-last_updated: "2026-04-01T20:52:03.243Z"
-last_activity: 2026-04-01
+stopped_at: Phase 2 UI-SPEC approved
+last_updated: "2026-04-01T21:47:53.708Z"
+last_activity: 2026-04-01 -- Phase 02 execution started
 progress:
   total_phases: 8
   completed_phases: 1
-  total_plans: 3
+  total_plans: 7
   completed_plans: 3
   percent: 67
 ---
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** New Haifa rental listings from all sources appear on a single live map every morning — no manual searching required.
-**Current focus:** Phase 01 — foundation
+**Current focus:** Phase 02 — yad2-scraper-llm-pipeline
 
 ## Current Position
 
-Phase: 2
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-04-01
+Phase: 02 (yad2-scraper-llm-pipeline) — EXECUTING
+Plan: 1 of 4
+Status: Executing Phase 02
+Last activity: 2026-04-01 -- Phase 02 execution started
 
 Progress: [██████░░░░] 67%
 
@@ -85,6 +85,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-01T16:37:56.028Z
-Stopped at: Completed 01-foundation plan 02 (frontend scaffold + Docker Compose)
-Resume file: None
+Last session: 2026-04-01T21:18:49.386Z
+Stopped at: Phase 2 UI-SPEC approved
+Resume file: .planning/phases/02-yad2-scraper-llm-pipeline/02-UI-SPEC.md
