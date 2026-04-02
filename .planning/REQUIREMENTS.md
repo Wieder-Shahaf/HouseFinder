@@ -44,9 +44,9 @@
 
 ### Scheduler
 
-- [ ] **SCHED-01**: All scrapers run automatically on a configurable interval (default: every 2 hours)
-- [ ] **SCHED-02**: Overlapping runs are prevented (job lock — a new run does not start if previous is still running)
-- [ ] **SCHED-03**: Scheduler is embedded in the backend process (APScheduler — no separate service needed)
+- [x] **SCHED-01**: All scrapers run automatically on a configurable interval (default: every 2 hours)
+- [x] **SCHED-02**: Overlapping runs are prevented (job lock — a new run does not start if previous is still running)
+- [x] **SCHED-03**: Scheduler is embedded in the backend process (APScheduler — no separate service needed)
 
 ### Storage & Data
 
@@ -135,9 +135,9 @@
 | LLM-04 | Phase 2 | Complete |
 | LLM-05 | Phase 2 | Complete |
 | LLM-06 | Phase 2 | Complete |
-| SCHED-01 | Phase 3 | Pending |
-| SCHED-02 | Phase 3 | Pending |
-| SCHED-03 | Phase 3 | Pending |
+| SCHED-01 | Phase 3 | Complete |
+| SCHED-02 | Phase 3 | Complete |
+| SCHED-03 | Phase 3 | Complete |
 | MAP-01 | Phase 4 | Pending |
 | MAP-02 | Phase 4 | Pending |
 | MAP-03 | Phase 4 | Pending |

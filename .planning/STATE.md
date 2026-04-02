@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-yad2-scraper-llm-pipeline Plan 02 (02-02-PLAN.md)
-last_updated: "2026-04-01T22:36:57.027Z"
-last_activity: 2026-04-01
+stopped_at: Completed 03-rest-api-scheduler 03-01-PLAN.md
+last_updated: "2026-04-02T11:07:30.342Z"
+last_activity: 2026-04-02
 progress:
   total_phases: 8
-  completed_phases: 1
-  total_plans: 7
-  completed_plans: 6
+  completed_phases: 2
+  total_plans: 9
+  completed_plans: 8
   percent: 67
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** New Haifa rental listings from all sources appear on a single live map every morning — no manual searching required.
-**Current focus:** Phase 02 — yad2-scraper-llm-pipeline
+**Current focus:** Phase 03 — rest-api-scheduler
 
 ## Current Position
 
-Phase: 02 (yad2-scraper-llm-pipeline) — EXECUTING
-Plan: 4 of 4
+Phase: 03 (rest-api-scheduler) — EXECUTING
+Plan: 2 of 2
 Status: Ready to execute
-Last activity: 2026-04-01
+Last activity: 2026-04-02
 
 Progress: [██████░░░░] 67%
 
@@ -57,6 +57,7 @@ Progress: [██████░░░░] 67%
 | Phase 02-yad2-scraper-llm-pipeline P01 | 30 | 3 tasks | 9 files |
 | Phase 02-yad2-scraper-llm-pipeline P03 | 10 | 1 tasks | 2 files |
 | Phase 02-yad2-scraper-llm-pipeline P02 | 6 | 2 tasks | 2 files |
+| Phase 03-rest-api-scheduler P01 | 1 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,8 @@ Recent decisions affecting current work:
 - [Phase 02-yad2-scraper-llm-pipeline]: output_config.format json_schema for structured LLM output — no retry logic needed
 - [Phase 02-yad2-scraper-llm-pipeline]: guest_token preflight: GET yad2.co.il/realestate/rent before feed API to acquire JWT cookie — best-effort, continues without on failure
 - [Phase 02-yad2-scraper-llm-pipeline]: from __future__ import annotations added to yad2.py for Python 3.9 union type syntax compatibility
+- [Phase 03-rest-api-scheduler]: APScheduler embedded in FastAPI lifespan with deferred imports in job function to avoid circular dependencies
+- [Phase 03-rest-api-scheduler]: GET /api/health returns per-source scraper state (last_run, listings_inserted, success) from in-memory _health dict
 
 ### Pending Todos
 
@@ -96,6 +99,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-01T22:36:57.025Z
-Stopped at: Completed 02-yad2-scraper-llm-pipeline Plan 02 (02-02-PLAN.md)
+Last session: 2026-04-02T11:07:30.339Z
+Stopped at: Completed 03-rest-api-scheduler 03-01-PLAN.md
 Resume file: None

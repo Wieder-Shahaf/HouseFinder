@@ -70,7 +70,7 @@ Plans:
   4. Triggering a second scraper run while the first is still in progress does not start a duplicate run (job lock enforced)
 **Plans**: 2 plans
 Plans:
-- [ ] 03-01-PLAN.md — Scheduler module + health endpoint + test infrastructure (APScheduler, config, lifespan wiring)
+- [x] 03-01-PLAN.md — Scheduler module + health endpoint + test infrastructure (APScheduler, config, lifespan wiring)
 - [ ] 03-02-PLAN.md — Listings REST API (GET /listings filters, PUT seen/favorited, comprehensive tests)
 
 ### Phase 4: Map Web UI
@@ -139,7 +139,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 |-------|----------------|--------|-----------|
 | 1. Foundation | 1/3 | In Progress|  |
 | 2. Yad2 Scraper + LLM Pipeline | 0/4 | Planned | - |
-| 3. REST API + Scheduler | 0/2 | Planned | - |
+| 3. REST API + Scheduler | 1/2 | In Progress|  |
 | 4. Map Web UI | 0/TBD | Not started | - |
 | 5. Geocoding + Dedup + Neighborhoods | 0/TBD | Not started | - |
 | 6. Madlan Scraper | 0/TBD | Not started | - |
