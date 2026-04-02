@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-geocoding-dedup-neighborhoods 05-01-PLAN.md
-last_updated: "2026-04-02T20:21:47.744Z"
+stopped_at: Completed 05-geocoding-dedup-neighborhoods 05-02-PLAN.md
+last_updated: "2026-04-02T20:25:56.934Z"
 last_activity: 2026-04-02
 progress:
   total_phases: 8
   completed_phases: 4
   total_plans: 16
-  completed_plans: 14
+  completed_plans: 15
   percent: 67
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 05 (geocoding-dedup-neighborhoods) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-02
 
@@ -63,6 +63,7 @@ Progress: [██████░░░░] 67%
 | Phase 04-map-web-ui P03 | 5 | 1 tasks | 5 files |
 | Phase 04-map-web-ui P04 | 10 | 2 tasks | 0 files |
 | Phase 05-geocoding-dedup-neighborhoods P05-01 | 3 | 3 tasks | 4 files |
+| Phase 05-geocoding-dedup-neighborhoods P05-02 | 3 | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -101,6 +102,8 @@ Recent decisions affecting current work:
 - [Phase 04-map-web-ui]: No code changes required in plan 04 — integration passed verification without fixes; human checkpoint approved on first pass
 - [Phase 05-geocoding-dedup-neighborhoods]: test_merkaz_center adjusted to lng=35.025 to avoid bbox overlap with כרמל (bounding boxes overlap at lat=32.825, lng=35.00-35.02)
 - [Phase 05-geocoding-dedup-neighborhoods]: Nominatim 'lon' string-to-float cast documented prominently — cast is mandatory as Nominatim JSON returns strings not numbers
+- [Phase 05-geocoding-dedup-neighborhoods]: Google Maps Playwright fallback uses http:// when Bright Data proxy is enabled (proxy handles SSL termination)
+- [Phase 05-geocoding-dedup-neighborhoods]: Dedup canonical is first-inserted (lowest id) per D-09 — deterministic and stable across reruns
 
 ### Pending Todos
 
@@ -122,6 +125,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-02T20:21:47.741Z
-Stopped at: Completed 05-geocoding-dedup-neighborhoods 05-01-PLAN.md
+Last session: 2026-04-02T20:25:56.932Z
+Stopped at: Completed 05-geocoding-dedup-neighborhoods 05-02-PLAN.md
 Resume file: None

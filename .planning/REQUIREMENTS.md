@@ -52,7 +52,7 @@
 
 - [x] **DATA-01**: All listings stored in SQLite database with normalized schema
 - [x] **DATA-02**: Same-source deduplication: a listing already stored by its source ID is not inserted again
-- [ ] **DATA-03**: Cross-source deduplication: listings from different sources that share price + room count + similar coordinates are merged into one record
+- [x] **DATA-03**: Cross-source deduplication: listings from different sources that share price + room count + similar coordinates are merged into one record
 - [x] **DATA-04**: Each listing is geocoded (Hebrew address → lat/lng) via Nominatim; geocoding is done asynchronously and does not block scraper runs
 - [x] **DATA-05**: Listings are tagged with neighborhood (Carmel, Downtown, Neve Shanan) based on geocoded coordinates
 
@@ -146,7 +146,7 @@
 | MAP-06 | Phase 4 | Complete |
 | MAP-07 | Phase 4 | Complete |
 | MAP-08 | Phase 4 | Complete |
-| DATA-03 | Phase 5 | Pending |
+| DATA-03 | Phase 5 | Complete |
 | DATA-04 | Phase 5 | Complete |
 | DATA-05 | Phase 5 | Complete |
 | MADL-01 | Phase 6 | Pending |
