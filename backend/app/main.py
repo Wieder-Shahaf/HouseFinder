@@ -14,9 +14,9 @@ from app.scheduler import scheduler, run_yad2_scrape_job, get_health_state
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Create tables if they don't exist (idempotent)
+    # Create tables if they don't exist (checkfirst=True prevents race on multi-worker startup)
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(lambda c: Base.metadata.create_all(c, checkfirst=True))
 
     # SCHED-03: embedded scheduler starts with FastAPI process
     scheduler.add_job(
