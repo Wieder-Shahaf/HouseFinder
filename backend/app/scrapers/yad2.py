@@ -236,8 +236,31 @@ async def fetch_yad2_browser(url: str) -> list[dict]:
         page = await context.new_page()
         await Stealth().apply_stealth_async(page)
         await page.goto(url, wait_until="load", timeout=60000)
-        # Wait for JS-rendered content after initial load event
-        await page.wait_for_timeout(5000)
+
+        # Scroll-to-load constants
+        MAX_SCROLLS = 10
+        SCROLL_PAUSE_MS = 2000
+        INITIAL_WAIT_MS = 3000
+
+        # Wait for initial JS hydration
+        await page.wait_for_timeout(INITIAL_WAIT_MS)
+
+        # Incremental scroll loop to trigger lazy-loaded / infinite-scroll listings
+        prev_height = await page.evaluate("document.body.scrollHeight")
+        for i in range(1, MAX_SCROLLS + 1):
+            await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+            await page.wait_for_timeout(SCROLL_PAUSE_MS)
+            new_height = await page.evaluate("document.body.scrollHeight")
+            logger.info(f"[yad2] Scroll {i}: page height {prev_height} -> {new_height}")
+            if new_height == prev_height:
+                logger.info(f"[yad2] Scroll loop: no new content after {i} iterations — stopping early")
+                break
+            prev_height = new_height
+
+        # Scroll back to top and allow any final renders to settle
+        await page.evaluate("window.scrollTo(0, 0)")
+        await page.wait_for_timeout(1000)
+
         content = await page.content()
         await context.close()
 
