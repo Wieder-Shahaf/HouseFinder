@@ -15,7 +15,8 @@ from app.schemas.listing import ListingResponse
 router = APIRouter(prefix="/api/listings", tags=["listings"])
 
 
-@router.get("/", response_model=List[ListingResponse])
+@router.get("", response_model=List[ListingResponse])
+@router.get("/", response_model=List[ListingResponse], include_in_schema=False)
 async def get_listings(
     price_min: Optional[int] = Query(None, ge=0),
     price_max: Optional[int] = Query(None, ge=0),
