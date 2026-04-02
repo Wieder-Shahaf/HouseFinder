@@ -30,5 +30,10 @@ class Settings(BaseSettings):
     # Scheduler settings (Phase 3) — SCHED-01
     scrape_interval_hours: int = 2
 
+    # Bright Data Web Unlocker proxy (optional — enables CAPTCHA bypass)
+    bright_data_host: str = ""   # e.g. "brd.superproxy.io:33335"
+    bright_data_user: str = ""   # e.g. "brd-customer-xxx-zone-web_unlocker1"
+    bright_data_pass: str = ""
+
 
 settings = Settings()
