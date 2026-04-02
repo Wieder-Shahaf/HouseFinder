@@ -24,6 +24,7 @@ from app.config import settings
 from app.llm.verifier import batch_verify_listings, merge_llm_fields
 from app.models.listing import Listing
 from app.scrapers.base import ScraperResult
+from app.scrapers.proxy import get_proxy_launch_args, is_proxy_enabled
 
 logger = logging.getLogger(__name__)
 
@@ -220,6 +221,8 @@ async def fetch_yad2_browser(url: str) -> list[dict]:
     if os.path.exists(singleton_lock):
         os.remove(singleton_lock)
 
+    if is_proxy_enabled():
+        logger.info("[yad2] Bright Data Web Unlocker proxy enabled for Playwright")
     logger.info("[yad2] httpx blocked — falling back to Playwright (headless=False, persistent profile)")
     async with async_playwright() as p:
         context = await p.chromium.launch_persistent_context(
@@ -228,6 +231,7 @@ async def fetch_yad2_browser(url: str) -> list[dict]:
             locale="he-IL",
             viewport={"width": 1280, "height": 800},
             extra_http_headers={"Accept-Language": "he-IL,he;q=0.9"},
+            **get_proxy_launch_args(),
         )
         page = await context.new_page()
         await Stealth().apply_stealth_async(page)
@@ -262,6 +266,7 @@ async def fetch_yad2_browser(url: str) -> list[dict]:
                 locale="he-IL",
                 viewport={"width": 1280, "height": 800},
                 extra_http_headers={"Accept-Language": "he-IL,he;q=0.9"},
+                **get_proxy_launch_args(),
             )
             page2 = await context2.new_page()
             await page2.goto(url, wait_until="load", timeout=60000)
@@ -512,6 +517,9 @@ async def run_yad2_scraper(db: AsyncSession) -> ScraperResult:
                 "&property=1%2C3%2C5%2C6%2C39%2C32%2C55"
                 "&area=5"
             )
+            if is_proxy_enabled():
+                url = url.replace("https://", "http://", 1)
+                logger.info("[yad2] Proxy active — using http:// scheme for Web Unlocker")
             feed_items = await fetch_yad2_browser(url)
 
         # Neighborhood filter (YAD2-01): discard listings outside target areas
