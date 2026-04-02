@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react'
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
+import { useState } from 'react'
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import { SlidersHorizontal } from 'lucide-react'
 import { useListings } from '../hooks/useListings'
 import { createListingIcon } from '../components/ListingPin'
@@ -9,23 +9,9 @@ import FilterSheet from '../components/FilterSheet'
 const HAIFA_CENTER = [32.7940, 34.9896]
 const DEFAULT_ZOOM = 13
 
-// Closes the sheet when the map background is tapped,
-// but only if a pin was NOT just tapped (pinJustClicked guard).
-function MapClickHandler({ onMapClick, pinJustClicked }) {
-  useMapEvents({
-    click: () => {
-      if (pinJustClicked.current) return
-      onMapClick()
-    },
-  })
-  return null
-}
-
 export default function MapView() {
-  const [selectedListing, setSelectedListing] = useState(null)
   const [showFilters, setShowFilters] = useState(false)
   const [filters, setFilters] = useState({})
-  const pinJustClicked = useRef(false)
 
   // Build API params from filters state
   const apiParams = {}
@@ -46,7 +32,8 @@ export default function MapView() {
   if (filters.newOnly) apiParams.since_hours = 24
 
   const { data, isLoading, isError } = useListings(apiParams)
-
+  const listings = data ?? []
+  const listingsWithCoords = listings.filter(l => l.lat != null && l.lng != null)
   if (isLoading) {
     return (
       <div
@@ -70,9 +57,6 @@ export default function MapView() {
     )
   }
 
-  const listings = data ?? []
-  const listingsWithCoords = listings.filter(l => l.lat != null && l.lng != null)
-
   return (
     <div style={{ position: 'relative' }}>
       <MapContainer
@@ -85,10 +69,6 @@ export default function MapView() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         />
-        <MapClickHandler
-          onMapClick={() => setSelectedListing(null)}
-          pinJustClicked={pinJustClicked}
-        />
         {listingsWithCoords.map(listing => (
           <Marker
             key={listing.id}
@@ -96,18 +76,20 @@ export default function MapView() {
             icon={createListingIcon(listing)}
             eventHandlers={{
               click: () => {
-                pinJustClicked.current = true
-                setTimeout(() => { pinJustClicked.current = false }, 300)
-                setSelectedListing(listing)
+                setShowFilters(false)
               },
             }}
-          />
+          >
+            <Popup closeButton={false} autoClose={true} closeOnClick={true}>
+              <ListingSheet listing={listing} />
+            </Popup>
+          </Marker>
         ))}
       </MapContainer>
 
       {listings.length === 0 && (
         <div
-          className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-8 text-center bg-white/80 z-[1000]"
+          className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-8 text-center bg-white/80 z-20"
           style={{ height: 'calc(100dvh - 56px)' }}
         >
           <h2 className="text-xl font-semibold text-slate-700">אין מודעות זמינות</h2>
@@ -124,7 +106,6 @@ export default function MapView() {
         <SlidersHorizontal size={20} className="text-slate-700" />
       </button>
 
-      <ListingSheet listing={selectedListing} onClose={() => setSelectedListing(null)} />
       <FilterSheet
         isOpen={showFilters}
         onClose={() => setShowFilters(false)}

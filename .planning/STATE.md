@@ -89,10 +89,13 @@ Recent decisions affecting current work:
 - [Phase 03-rest-api-scheduler]: APScheduler embedded in FastAPI lifespan with deferred imports in job function to avoid circular dependencies
 - [Phase 03-rest-api-scheduler]: GET /api/health returns per-source scraper state (last_run, listings_inserted, success) from in-memory _health dict
 - [Phase 04-map-web-ui]: MapView empty state: absolute overlay on map container at z-index 1000 (map still renders behind)
-- [Phase 04-map-web-ui]: MapView owns all filter/sheet state internally (selectedListing, showFilters, filters) — no external props needed
+- [Phase 04-map-web-ui]: MapView owns all filter/sheet state internally (showFilters, filters) — selectedListing removed; listing detail now rendered inside Leaflet <Popup> component, not a custom bottom sheet
 - [Phase 04-map-web-ui]: Multiple neighborhood selections result in no neighborhood filter (API takes single value)
 - [Phase 04-map-web-ui]: FavoritesView fetches data via useListings({ is_favorited: true }) — same hook as MapView, no new query pattern needed
 - [Phase 04-map-web-ui]: BottomNav rendered outside Routes in App.jsx so it persists across all route transitions
+- [Phase 04-map-web-ui]: Listing detail uses Leaflet native <Popup> (not custom bottom sheet) — avoids all event propagation complexity; ListingSheet is a compact popup card (max 320×420px) with image carousel and swipe support
+- [Phase 04-map-web-ui]: All pin icons wrapped in 44×44px transparent hit area div for reliable mobile tap targets while keeping visual indicator small
+- [Phase 04-map-web-ui]: Vite API proxy target changed from localhost:8000 to http://backend:8000 (Docker service hostname) with VITE_API_URL env override; docker-compose.dev.yml frontend service now has explicit build config
 
 ### Pending Todos
 

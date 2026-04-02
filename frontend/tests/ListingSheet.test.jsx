@@ -55,7 +55,7 @@ describe('ListingSheet', () => {
     // Price
     expect(screen.getByText('₪3,500')).toBeInTheDocument()
     // Rooms
-    expect(screen.getByText('3 חדרים')).toBeInTheDocument()
+    expect(screen.getByText('חדרים: 3')).toBeInTheDocument()
     // Address
     expect(screen.getByText('רחוב הנשיא 10, חיפה')).toBeInTheDocument()
     // Source badge
@@ -64,17 +64,71 @@ describe('ListingSheet', () => {
     expect(screen.getByText('פתח מודעה מקורית')).toBeInTheDocument()
   })
 
-  it('calls onClose when backdrop clicked', () => {
-    const onClose = vi.fn()
+  it('renders fixed-size popup card with scrollable content', () => {
     render(
-      <ListingSheet listing={sampleListing} onClose={onClose} />,
+      <ListingSheet listing={sampleListing} onClose={vi.fn()} />,
       { wrapper }
     )
-    // The backdrop is the fixed inset-0 z-40 div (first child of fragment)
-    const backdrop = document.querySelector('.fixed.inset-0.z-40')
-    expect(backdrop).toBeInTheDocument()
-    fireEvent.click(backdrop)
-    expect(onClose).toHaveBeenCalledTimes(1)
+    const popupCard = screen.getByTestId('listing-popup-card')
+    const scrollArea = screen.getByTestId('listing-popup-scroll')
+    expect(popupCard).toBeInTheDocument()
+    expect(scrollArea).toBeInTheDocument()
+  })
+
+  it('renders listing image when image url exists', () => {
+    render(
+      <ListingSheet
+        listing={{ ...sampleListing, image_url: 'https://example.com/apartment.jpg' }}
+        onClose={vi.fn()}
+      />,
+      { wrapper }
+    )
+    const img = screen.getByRole('img', { name: sampleListing.title })
+    expect(img).toBeInTheDocument()
+  })
+
+  it('uses contain mode for portrait images after load', () => {
+    render(
+      <ListingSheet
+        listing={{ ...sampleListing, image_url: 'https://example.com/portrait.jpg' }}
+        onClose={vi.fn()}
+      />,
+      { wrapper }
+    )
+
+    const img = screen.getByTestId('listing-carousel-image')
+    Object.defineProperty(img, 'naturalWidth', { configurable: true, value: 600 })
+    Object.defineProperty(img, 'naturalHeight', { configurable: true, value: 1200 })
+    fireEvent.load(img)
+
+    expect(img.className).toContain('object-contain')
+  })
+
+  it('renders carousel dots and switches images on dot click', () => {
+    render(
+      <ListingSheet
+        listing={{
+          ...sampleListing,
+          images: [
+            'https://example.com/apartment-1.jpg',
+            'https://example.com/apartment-2.jpg',
+          ],
+        }}
+        onClose={vi.fn()}
+      />,
+      { wrapper }
+    )
+
+    const firstDot = screen.getByLabelText('מעבר לתמונה 1')
+    const secondDot = screen.getByLabelText('מעבר לתמונה 2')
+    expect(firstDot).toBeInTheDocument()
+    expect(secondDot).toBeInTheDocument()
+
+    const img = screen.getByRole('img', { name: sampleListing.title })
+    expect(img).toHaveAttribute('src', 'https://example.com/apartment-1.jpg')
+
+    fireEvent.click(secondDot)
+    expect(img).toHaveAttribute('src', 'https://example.com/apartment-2.jpg')
   })
 
   it('seen button calls markSeen mutation with listing id', () => {

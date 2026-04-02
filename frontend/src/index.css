@@ -4,3 +4,40 @@
 @theme {
   --font-family-sans: 'Noto Sans Hebrew', sans-serif;
 }
+
+html,
+body,
+#root {
+  direction: rtl;
+}
+
+.leaflet-container {
+  direction: rtl;
+}
+
+.leaflet-popup-content-wrapper {
+  padding: 0;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  width: min(82vw, 320px) !important;
+  max-width: 320px;
+  overflow-x: hidden;
+  direction: rtl;
+  text-align: right;
+}
+
+.leaflet-popup-content * {
+  box-sizing: border-box;
+}
+
+.leaflet-popup-tip-container {
+  margin-top: -1px;
+}
+
+.leaflet-popup {
+  max-width: 320px !important;
+}

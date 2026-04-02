@@ -6,7 +6,7 @@ import BottomNav from './components/BottomNav'
 function App() {
   return (
     <BrowserRouter>
-      <div className="bg-slate-50 min-h-screen">
+      <div dir="rtl" className="bg-slate-50 min-h-screen">
         <Routes>
           <Route path="/" element={<MapView />} />
           <Route path="/favorites" element={<FavoritesView />} />

@@ -19,6 +19,8 @@ vi.mock('react-leaflet', () => ({
       {children}
     </div>
   ),
+  Popup: ({ children }) => <div data-testid="map-popup">{children}</div>,
+  useMapEvents: () => ({}),
   useMap: () => ({}),
 }))
 
