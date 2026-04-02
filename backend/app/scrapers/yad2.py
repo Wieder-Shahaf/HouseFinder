@@ -83,13 +83,83 @@ async def fetch_yad2_api() -> dict:
 # ---------------------------------------------------------------------------
 
 
+def _flatten_nextdata_item(item: dict) -> dict:
+    """Flatten a Yad2 __NEXT_DATA__ feed item into the shape that parse_listing expects.
+
+    The real Yad2 page embeds all listing data in a Next.js __NEXT_DATA__ JSON blob.
+    Each item in props.pageProps.feed.{private,agency,...} has nested objects.
+    This function flattens them into the flat dict that parse_listing already reads.
+
+    Confirmed field mapping (from live DOM inspection 2026-04-02):
+      token                              → token / id
+      price                              → price (integer)
+      additionalDetails.roomsCount       → rooms
+      additionalDetails.squareMeter      → size_sqm
+      address.city.text                  → city
+      address.neighborhood.text          → neighborhood
+      address.street.text                → street
+      address.coords.lat/lon             → lat / lon
+      metaData.description               → title_1
+    """
+    addr = item.get("address") or {}
+    details = item.get("additionalDetails") or {}
+    meta = item.get("metaData") or {}
+    coords = addr.get("coords") or {}
+
+    token = item.get("token") or str(item.get("orderId") or "")
+
+    return {
+        "id": token,
+        "token": token,
+        "link_token": token,
+        "price": item.get("price"),
+        "rooms": details.get("roomsCount"),
+        "size_sqm": details.get("squareMeter"),
+        "city": (addr.get("city") or {}).get("text") or "",
+        "neighborhood": (addr.get("neighborhood") or {}).get("text") or "",
+        "street": (addr.get("street") or {}).get("text") or "",
+        "lat": coords.get("lat"),
+        "lon": coords.get("lon"),
+        "title_1": meta.get("description") or "",
+        "date": None,  # not present in feed item; available via item detail endpoint
+        "contact_name": None,
+        # Preserve original for raw_data serialisation
+        "_raw_nextdata": item,
+    }
+
+
 async def _parse_html_listings(html: str) -> list[dict]:
     """Extract listing items from rendered Yad2 page HTML.
 
-    Uses BeautifulSoup to find listing card elements. Selectors may need
-    updating as Yad2 DOM evolves — verify against live DOM before use.
-    # TODO: verify selectors against live DOM
+    Primary path: extract from Next.js __NEXT_DATA__ JSON blob embedded in the page.
+    The feed items are at props.pageProps.feed.{private,agency,platinum,...}.
+
+    Falls back to CSS-selector HTML parsing if __NEXT_DATA__ is absent.
     """
+    # --- Primary: __NEXT_DATA__ JSON extraction ---
+    nextdata_match = re.search(
+        r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>',
+        html,
+        re.DOTALL,
+    )
+    if nextdata_match:
+        try:
+            data = json.loads(nextdata_match.group(1))
+            feed = data["props"]["pageProps"]["feed"]
+            # Collect items from all feed categories that contain listing lists
+            # Skipping 'yad1' (different shape), 'pagination', 'lookalike'
+            listing_categories = ["private", "agency", "platinum", "kingOfTheHar", "trio", "booster", "leadingBroker"]
+            raw_items: list[dict] = []
+            for cat in listing_categories:
+                items = feed.get(cat)
+                if isinstance(items, list):
+                    raw_items.extend(items)
+            logger.info(f"[yad2] Extracted {len(raw_items)} items from __NEXT_DATA__ feed")
+            return [_flatten_nextdata_item(item) for item in raw_items if item.get("token")]
+        except Exception as e:
+            logger.warning(f"[yad2] Failed to parse __NEXT_DATA__: {e} — falling back to CSS selectors")
+
+    # --- Fallback: CSS selector HTML parsing (kept for resilience) ---
     try:
         from bs4 import BeautifulSoup
     except ImportError:
@@ -99,12 +169,11 @@ async def _parse_html_listings(html: str) -> list[dict]:
     soup = BeautifulSoup(html, "html.parser")
     listings: list[dict] = []
 
-    # Try common Yad2 feed item selectors
-    # TODO: verify selectors against live DOM
-    for card in soup.select("[data-testid='feed-item'], .feeditem, .feed-item, [class*='feedItem']"):
+    cards = soup.select("[data-testid='feed-item'], .feeditem, .feed-item, [class*='feedItem']")
+    logger.debug(f"[yad2] _parse_html_listings CSS fallback: found {len(cards)} card elements")
+    for card in cards:
         item: dict[str, Any] = {}
 
-        # ID from data attribute or link href
         link = card.select_one("a[href*='/item/']")
         if link and link.get("href"):
             match = re.search(r"/item/([^/?]+)", link["href"])
@@ -112,21 +181,18 @@ async def _parse_html_listings(html: str) -> list[dict]:
                 item["id"] = match.group(1)
                 item["link_token"] = match.group(1)
 
-        # Title
         for sel in ["[data-testid='title']", ".title", "h2", "h3"]:
             el = card.select_one(sel)
             if el and el.get_text(strip=True):
                 item["title_1"] = el.get_text(strip=True)
                 break
 
-        # Price
         for sel in ["[data-testid='price']", ".price", "[class*='price']"]:
             el = card.select_one(sel)
             if el and el.get_text(strip=True):
                 item["price"] = el.get_text(strip=True)
                 break
 
-        # Address / neighborhood
         for sel in ["[data-testid='address']", ".address", "[class*='address']"]:
             el = card.select_one(sel)
             if el and el.get_text(strip=True):
@@ -141,21 +207,85 @@ async def _parse_html_listings(html: str) -> list[dict]:
 
 async def fetch_yad2_browser(url: str) -> list[dict]:
     """Fallback: use Playwright+stealth to render the Yad2 page and extract listings."""
+    import os
     from playwright.async_api import async_playwright
-    from playwright_stealth import stealth_async  # 2.x API — must await
+    from playwright_stealth import Stealth  # 2.x API: Stealth().apply_stealth_async(page)
 
-    logger.info("[yad2] httpx blocked — falling back to Playwright")
+    # Persist browser profile so guest_token cookies survive between runs.
+    # This dramatically reduces the chance of bot-detection on repeat invocations.
+    user_data_dir = os.path.expanduser("~/.yad2-browser-profile")
+    os.makedirs(user_data_dir, exist_ok=True)
+
+    logger.info("[yad2] httpx blocked — falling back to Playwright (headless=False, persistent profile)")
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
-        context = await browser.new_context(
+        context = await p.chromium.launch_persistent_context(
+            user_data_dir=user_data_dir,
+            headless=False,
             locale="he-IL",
+            viewport={"width": 1280, "height": 800},
             extra_http_headers={"Accept-Language": "he-IL,he;q=0.9"},
         )
         page = await context.new_page()
-        await stealth_async(page)
-        await page.goto(url, wait_until="networkidle", timeout=30000)
+        await Stealth().apply_stealth_async(page)
+        await page.goto(url, wait_until="load", timeout=60000)
+        # Wait for JS-rendered content after initial load event
+        await page.wait_for_timeout(5000)
         content = await page.content()
-        await browser.close()
+        await context.close()
+
+    # Diagnostic: save HTML to temp file so we can inspect the real DOM structure
+    debug_path = "/tmp/yad2_debug.html"
+    try:
+        with open(debug_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        logger.info(f"[yad2] DEBUG: saved page HTML ({len(content)} bytes) to {debug_path}")
+    except Exception as e:
+        logger.warning(f"[yad2] DEBUG: could not write debug HTML: {e}")
+
+    # Detect captcha/bot-block page. With headless=False the user can solve the captcha
+    # manually in the visible browser window — wait up to 90s for the real page to load.
+    if "ShieldSquare" in content or "hcaptcha" in content or "Are you for real" in content:
+        logger.warning(
+            "[yad2] Bot-detection CAPTCHA detected. "
+            "A browser window is open — solve the captcha manually, then the scraper will continue. "
+            "Waiting up to 90 seconds..."
+        )
+        # Re-open browser to wait for captcha resolution
+        async with async_playwright() as p2:
+            context2 = await p2.chromium.launch_persistent_context(
+                user_data_dir=user_data_dir,
+                headless=False,
+                locale="he-IL",
+                viewport={"width": 1280, "height": 800},
+                extra_http_headers={"Accept-Language": "he-IL,he;q=0.9"},
+            )
+            page2 = await context2.new_page()
+            await page2.goto(url, wait_until="load", timeout=60000)
+            # Wait for the real page to appear (no captcha keywords in URL or page title)
+            try:
+                await page2.wait_for_function(
+                    "() => !document.title.includes('אבטחת אתר') && !document.title.includes('Captcha') && document.title.length > 0",
+                    timeout=90000,
+                )
+                await page2.wait_for_timeout(3000)
+                content = await page2.content()
+            except Exception:
+                logger.warning("[yad2] Captcha not solved within 90s — giving up for this run")
+                await context2.close()
+                return []
+            await context2.close()
+
+        # Save updated HTML for diagnostics
+        try:
+            with open(debug_path, "w", encoding="utf-8") as f:
+                f.write(content)
+        except Exception:
+            pass
+
+        # If still captcha after waiting, give up
+        if "ShieldSquare" in content or "hcaptcha" in content:
+            logger.warning("[yad2] Still on captcha page after wait — no listing data available")
+            return []
 
     return await _parse_html_listings(content)
 
@@ -282,6 +412,18 @@ def parse_listing(item: dict) -> dict | None:
     link_token = item.get("link_token") or item.get("id") or source_id
     url = f"https://www.yad2.co.il/item/{link_token}"
 
+    # Coordinates — present when extracted from __NEXT_DATA__ (lon mapped to lng for DB column)
+    lat = item.get("lat")
+    lng = item.get("lon") or item.get("lng")
+    try:
+        lat = float(lat) if lat is not None else None
+        lng = float(lng) if lng is not None else None
+    except (ValueError, TypeError):
+        lat = lng = None
+
+    # For raw_data serialisation, strip internal-only key added by _flatten_nextdata_item
+    raw_item = {k: v for k, v in item.items() if k != "_raw_nextdata"}
+
     return {
         "source": "yad2",
         "source_id": source_id,
@@ -294,7 +436,9 @@ def parse_listing(item: dict) -> dict | None:
         "post_date": post_date,
         "url": url,
         "source_badge": "יד2",
-        "raw_data": json.dumps(item, ensure_ascii=False),
+        "raw_data": json.dumps(raw_item, ensure_ascii=False),
+        "lat": lat,
+        "lng": lng,
     }
 
 
@@ -352,9 +496,17 @@ async def run_yad2_scraper(db: AsyncSession) -> ScraperResult:
             logger.info(f"[yad2] Fetched {len(feed_items)} listings via httpx API")
         except (httpx.HTTPStatusError, httpx.RequestError, ValueError) as e:
             logger.warning(f"[yad2] httpx failed ({e}) — falling back to Playwright")
+            # Use the frontend URL format matching the user's actual browser URL.
+            # area=5 = Haifa coastal-north region; params match the yad2 frontend.
+            # The internal gw.yad2.co.il API path is not yet confirmed via DevTools;
+            # until it is, the Playwright path is the primary data source.
             url = (
-                f"https://www.yad2.co.il/realestate/rent"
-                f"?city={settings.yad2_city_code}&price=0-{settings.yad2_price_max}"
+                "https://www.yad2.co.il/realestate/rent/coastal-north"
+                f"?maxPrice={settings.yad2_price_max}"
+                "&minRooms=2.5&maxRooms=3"
+                "&imageOnly=1&priceOnly=1"
+                "&property=1%2C3%2C5%2C6%2C39%2C32%2C55"
+                "&area=5"
             )
             feed_items = await fetch_yad2_browser(url)
 
@@ -389,9 +541,22 @@ async def run_yad2_scraper(db: AsyncSession) -> ScraperResult:
             verified_listings: list[dict] = []
             for scraper_data, llm_data in zip(parsed, llm_results):
                 if not llm_data.get("is_rental", False):
-                    # LLM-01: Reject non-rental posts
+                    rejection_reason = llm_data.get("rejection_reason", "")
+                    if rejection_reason and str(rejection_reason).startswith("LLM error:"):
+                        # LLM call failed (auth error, network error, rate limit, etc.)
+                        # Do NOT reject the listing — flag it for manual review instead.
+                        result.listings_flagged += 1
+                        logger.warning(
+                            f"[llm] Listing flagged (LLM unavailable): {rejection_reason}"
+                        )
+                        # Insert with zero confidence so the UI can surface it for review
+                        merged = dict(scraper_data)
+                        merged["llm_confidence"] = 0.0
+                        verified_listings.append(merged)
+                        continue
+                    # LLM-01: Reject non-rental posts (LLM made a real decision)
                     result.listings_rejected += 1
-                    logger.debug(f"[llm] Rejected: {llm_data.get('rejection_reason', 'unknown')}")
+                    logger.debug(f"[llm] Rejected: {rejection_reason or 'unknown'}")
                     continue
 
                 # LLM-04: Merge LLM fields with scraper fields (scraper non-null wins)

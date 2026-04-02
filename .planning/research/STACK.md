@@ -18,9 +18,10 @@
 | SQLAlchemy | 2.0+ | ORM / query layer | Async-capable, well-typed, straightforward migrations via Alembic |
 | Alembic | 1.13+ | Schema migrations | Standard SQLAlchemy migration tool; keeps schema changes reproducible |
 | APScheduler | 3.10+ | Periodic scraping scheduler | Pure-Python, embeds directly into FastAPI process, cron-style triggers; no separate worker infra needed for single-user scale |
-| Playwright (Python) | 1.44+ | Browser automation for scraping | Best-in-class headless browser control; handles JS-heavy SPAs; critical for Facebook and Yad2 |
-| httpx | 0.27+ | HTTP client for static pages | Async HTTP; use for Madlan/Yad2 API endpoints or RSS feeds when a full browser is not required |
-| BeautifulSoup4 | 4.12+ | HTML parsing | Reliable, well-maintained; use after Playwright renders the DOM |
+| Playwright (Python) | 1.44+ | Browser automation — Facebook only | Keep for Facebook scraping: session persistence, headed mode + Xvfb, playwright-stealth. Do NOT replace with a higher-level wrapper for Facebook. |
+| Crawl4AI | latest | JS-rendering scraper — Yad2 + Madlan | Open source (Apache 2.0), free forever, async Python API, built on Playwright under the hood. Outputs LLM-ready markdown directly — pairs perfectly with the Phase 2 LLM verification pipeline. Replaces raw Playwright+BS4 for structured sources. Session IDs enable authentication flows. |
+| httpx | 0.27+ | HTTP client for static pages | Async HTTP; use for Yad2/Madlan direct API endpoints when a full browser is not needed |
+| BeautifulSoup4 | 4.12+ | HTML parsing fallback | Use only if Crawl4AI output needs post-processing; may be unnecessary with Crawl4AI's built-in extraction strategies |
 | pydantic | 2.7+ | Data validation | FastAPI-native, fast Rust-based validation in v2 |
 
 ### Frontend
@@ -62,8 +63,13 @@ No separate RTL library (e.g., `stylis-plugin-rtl`) is needed when using Tailwin
 |------------|---------|---------|-----|
 | Docker + Docker Compose | Compose v2 | Container packaging | One `docker compose up` deploys the full stack (FastAPI + Vite build + SQLite volume mount); reproducible across machines |
 | Nginx (inside Docker) | 1.26+ | Reverse proxy + static file serving | Serves the Vite-built frontend, proxies `/api` to FastAPI, handles SSL termination if deploying to a VPS |
-| Render / Railway / Fly.io | — | Cloud deployment | Any of these runs a single Docker container for ~$5–7/month with a public URL; no Kubernetes overhead |
+| DigitalOcean (VPS) | — | **Primary** cloud deployment — **FREE via GitHub Student Pack** | $200 credits covers ~33 months on a $6/mo droplet; best fit for Playwright `headless=False` + Xvfb which requires a real Linux VM; not possible on serverless/container platforms |
+| Railway | — | Alternative deployment — **FREE via GitHub Student Pack** | Simpler PaaS; use if VPS management feels like overhead, but test Playwright Xvfb support first |
+| GitHub Actions | — | CI/CD — **FREE via GitHub Pro (Student Pack)** | Automate Docker build + SSH deploy on push; no extra cost |
+| Namecheap .me domain | — | Custom domain — **FREE 1 year via GitHub Student Pack** | Access the app by name; register via GitHub Pack |
 | Volumes (Docker) | — | SQLite persistence | Mount a host volume so the SQLite file survives container restarts |
+
+> **Student note:** DigitalOcean is the primary recommendation because Playwright in headed mode (`headless=False` + Xvfb virtual display) is required for Facebook scraping and works only on a real Linux VM — not on Railway's managed container environment. The $200 Student Pack credit covers the full development lifetime of this project at no cost.
 
 **Why not PostgreSQL:** For a single user with hundreds of listings, SQLite is faster to operate (no separate container, no connection pool, no credentials), and SQLAlchemy means migrating to Postgres later is a one-line change. Do not add Postgres complexity until you need it.
 
@@ -175,6 +181,9 @@ Both Yad2 and Madlan are far easier to scrape than Facebook because they do not 
 | WhatsApp API | Twilio | Meta Cloud API direct | Twilio sandbox is faster to set up; Meta direct requires business verification |
 | CSS framework | Tailwind CSS | Chakra UI / MUI | Tailwind's `rtl:` variants are simpler for RTL than component libraries with mixed RTL support |
 | Scraping: Facebook | Playwright + stealth | facebook-scraper library | `facebook-scraper` is broken as of 2024; Playwright is the only working approach |
+| Scraping: Yad2 + Madlan | Crawl4AI | raw Playwright + BS4 | Crawl4AI is free/open-source, async Python, outputs LLM-ready markdown, and reduces boilerplate vs writing Playwright + BS4 manually |
+| Scraping service | (none / self-built) | Firecrawl (self-hosted) | Firecrawl self-hosting requires PostgreSQL + Redis + Playwright microservice — significant ops overhead for a personal tool. Hosted Firecrawl is paid. Crawl4AI gives 80% of the benefit with zero infrastructure cost. |
+| Cloud deployment | DigitalOcean (Student $200 credit) | Render / Fly.io (paid) | DigitalOcean is free via GitHub Student Pack; also required for Playwright Xvfb headed mode on a real Linux VM |
 
 ---
 

@@ -29,9 +29,10 @@ A personal mobile-first web app that automatically scrapes Facebook groups, Face
 | SQLAlchemy | 2.0+ | ORM / query layer | Async-capable, well-typed, straightforward migrations via Alembic |
 | Alembic | 1.13+ | Schema migrations | Standard SQLAlchemy migration tool; keeps schema changes reproducible |
 | APScheduler | 3.10+ | Periodic scraping scheduler | Pure-Python, embeds directly into FastAPI process, cron-style triggers; no separate worker infra needed for single-user scale |
-| Playwright (Python) | 1.44+ | Browser automation for scraping | Best-in-class headless browser control; handles JS-heavy SPAs; critical for Facebook and Yad2 |
-| httpx | 0.27+ | HTTP client for static pages | Async HTTP; use for Madlan/Yad2 API endpoints or RSS feeds when a full browser is not required |
-| BeautifulSoup4 | 4.12+ | HTML parsing | Reliable, well-maintained; use after Playwright renders the DOM |
+| Playwright (Python) | 1.44+ | Browser automation — **Facebook only** | Keep for Facebook scraping: session persistence, headed mode + Xvfb, playwright-stealth. Do NOT replace with a higher-level wrapper for Facebook. |
+| Crawl4AI | latest | JS-rendering scraper — **Yad2 + Madlan** | Free/open-source (Apache 2.0), async Python, built on Playwright. Outputs LLM-ready markdown — pairs with the LLM verification pipeline. Replaces raw Playwright+BS4 for structured sources. |
+| httpx | 0.27+ | HTTP client for static pages | Use for Yad2/Madlan direct API endpoints when a full browser isn't needed |
+| BeautifulSoup4 | 4.12+ | HTML parsing fallback | Use only if Crawl4AI output needs post-processing |
 | pydantic | 2.7+ | Data validation | FastAPI-native, fast Rust-based validation in v2 |
 ### Frontend
 | Technology | Version | Purpose | Why |
@@ -59,8 +60,13 @@ A personal mobile-first web app that automatically scrapes Facebook groups, Face
 |------------|---------|---------|-----|
 | Docker + Docker Compose | Compose v2 | Container packaging | One `docker compose up` deploys the full stack (FastAPI + Vite build + SQLite volume mount); reproducible across machines |
 | Nginx (inside Docker) | 1.26+ | Reverse proxy + static file serving | Serves the Vite-built frontend, proxies `/api` to FastAPI, handles SSL termination if deploying to a VPS |
-| Render / Railway / Fly.io | — | Cloud deployment | Any of these runs a single Docker container for ~$5–7/month with a public URL; no Kubernetes overhead |
+| DigitalOcean (VPS) | — | **Primary** cloud deployment | $200 free credits via GitHub Student Pack; run Docker + Nginx on a $6/mo droplet = ~33 months free; best fit for Playwright headless=False + Xvfb which needs a real Linux VM |
+| Railway | — | Alternative deployment | Free credits via GitHub Student Pack; simpler than DigitalOcean but less control over the Linux environment needed for Playwright |
 | Volumes (Docker) | — | SQLite persistence | Mount a host volume so the SQLite file survives container restarts |
+| GitHub Actions | — | CI/CD | Free via GitHub Pro (included in Student Pack); automate Docker build + deploy on push |
+| Namecheap .me domain | — | Custom domain | Free for 1 year via GitHub Student Pack; optional but nice for accessing the app by name |
+
+> **Student Pack note:** Railway ($5/mo credits → free) and DigitalOcean ($200 credits) are both available via the GitHub Student Pack at education.github.com/pack. DigitalOcean is the stronger choice here because Playwright in headed mode (headless=False + Xvfb) requires a real Linux VM — Railway's container environment may not support virtual displays reliably.
 ## Facebook Scraping — Special Section
 ### The Core Problem
 ### Recommended Approach: Playwright with Persistent Session (MEDIUM confidence)
@@ -81,16 +87,20 @@ A personal mobile-first web app that automatically scrapes Facebook groups, Face
 - **`requests` + `lxml`**: Same problem — no JS execution.
 - **Selenium**: Playwright supersedes it; slower, worse async support, harder to stealth.
 ## Yad2 and Madlan Scraping
+### Scraping Tool: Crawl4AI (preferred over raw Playwright+BS4)
+- Use `crawl4ai` (Apache 2.0, free) for both Yad2 and Madlan. It wraps Playwright, handles JS rendering, and outputs LLM-ready markdown — reducing boilerplate and pairing naturally with the Phase 2 LLM pipeline.
+- `pip install crawl4ai` — no API key, no cost, fully self-contained.
 ### Yad2
 - The page at `yad2.co.il/realestate/rent` loads listing data via XHR calls to `gw.yad2.co.il/feed/realestate/rent`.
 - These API endpoints accept query parameters for city, rooms, price range, etc.
-- The response is JSON — meaning you can call the API directly with `httpx` rather than running a full browser.
-- Recommended: reverse-engineer the API call from DevTools Network tab, replicate with `httpx`. Add a realistic `User-Agent` header.
+- **First try:** reverse-engineer the API call from DevTools Network tab, replicate with `httpx` directly (fastest path, no browser needed).
+- **Fallback:** use Crawl4AI with a session if the API endpoint requires a logged-in state.
 - Confidence: MEDIUM (internal APIs change without notice; verify at build time).
 ### Madlan
 - Inspect network calls on `madlan.co.il/rent` to identify the GraphQL or REST endpoint.
-- GraphQL is likely; use `httpx` to POST queries.
-- Confidence: LOW — Madlan is less well-documented than Yad2; requires manual API discovery at build time.
+- GraphQL is likely; use `httpx` to POST queries directly.
+- **Fallback:** use Crawl4AI if the endpoint requires browser rendering.
+- Confidence: LOW — Madlan is less well-documented; API shape needs discovery at build time.
 ## Map Display
 ### Recommended: React-Leaflet + OpenStreetMap
 | Criterion | Leaflet (React-Leaflet) | Google Maps JS API | Mapbox GL JS |
@@ -110,9 +120,12 @@ A personal mobile-first web app that automatically scrapes Facebook groups, Face
 | Task scheduling | APScheduler (in-process) | Celery + Redis | Celery requires a separate broker; overkill for cron-style hourly scraping |
 | Frontend framework | React + Vite | Next.js | No SSR needed for a personal tool; Next.js adds build complexity |
 | Map library | Leaflet (OSM) | Google Maps | Google requires billing; OSM is free and has Hebrew tiles |
+| Cloud deployment | DigitalOcean (Student $200 credit) | Render / Fly.io | DigitalOcean gives $200 free via GitHub Student Pack — enough for ~2.5 years on a $6/mo droplet; also supports Playwright Xvfb headed mode |
 | WhatsApp API | Twilio | Meta Cloud API direct | Twilio sandbox is faster to set up; Meta direct requires business verification |
 | CSS framework | Tailwind CSS | Chakra UI / MUI | Tailwind's `rtl:` variants are simpler for RTL than component libraries with mixed RTL support |
 | Scraping: Facebook | Playwright + stealth | facebook-scraper library | `facebook-scraper` is broken as of 2024; Playwright is the only working approach |
+| Scraping: Yad2 + Madlan | Crawl4AI | raw Playwright + BS4 | Crawl4AI is free/open-source, async Python, outputs LLM-ready markdown, reduces boilerplate |
+| Scraping service | (none) | Firecrawl (self-hosted) | Self-hosting requires PostgreSQL + Redis + Playwright microservice — overkill for a personal tool; hosted version is paid |
 ## Installation Snapshot
 # Python dependencies (requirements.txt)
 # Install Playwright browsers
