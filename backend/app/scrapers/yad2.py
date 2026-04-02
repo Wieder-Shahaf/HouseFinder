@@ -215,12 +215,16 @@ async def fetch_yad2_browser(url: str) -> list[dict]:
     # This dramatically reduces the chance of bot-detection on repeat invocations.
     user_data_dir = os.path.expanduser("~/.yad2-browser-profile")
     os.makedirs(user_data_dir, exist_ok=True)
+    # Remove stale lock file left by previous crash/container restart
+    singleton_lock = os.path.join(user_data_dir, "SingletonLock")
+    if os.path.exists(singleton_lock):
+        os.remove(singleton_lock)
 
     logger.info("[yad2] httpx blocked — falling back to Playwright (headless=False, persistent profile)")
     async with async_playwright() as p:
         context = await p.chromium.launch_persistent_context(
             user_data_dir=user_data_dir,
-            headless=False,
+            headless=True,
             locale="he-IL",
             viewport={"width": 1280, "height": 800},
             extra_http_headers={"Accept-Language": "he-IL,he;q=0.9"},
@@ -254,7 +258,7 @@ async def fetch_yad2_browser(url: str) -> list[dict]:
         async with async_playwright() as p2:
             context2 = await p2.chromium.launch_persistent_context(
                 user_data_dir=user_data_dir,
-                headless=False,
+                headless=True,
                 locale="he-IL",
                 viewport={"width": 1280, "height": 800},
                 extra_http_headers={"Accept-Language": "he-IL,he;q=0.9"},
