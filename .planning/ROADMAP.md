@@ -68,7 +68,10 @@ Plans:
   2. `PUT /listings/{id}/seen` and `PUT /listings/{id}/favorited` update the listing state and return the updated record
   3. `GET /health` returns last-run timestamps and listing counts per scraper source
   4. Triggering a second scraper run while the first is still in progress does not start a duplicate run (job lock enforced)
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 03-01-PLAN.md — Scheduler module + health endpoint + test infrastructure (APScheduler, config, lifespan wiring)
+- [ ] 03-02-PLAN.md — Listings REST API (GET /listings filters, PUT seen/favorited, comprehensive tests)
 
 ### Phase 4: Map Web UI
 **Goal**: Users can open the app on their phone and see all active Haifa listings on an interactive map with Hebrew RTL layout, filters, and seen/favorites controls
@@ -136,7 +139,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 |-------|----------------|--------|-----------|
 | 1. Foundation | 1/3 | In Progress|  |
 | 2. Yad2 Scraper + LLM Pipeline | 0/4 | Planned | - |
-| 3. REST API + Scheduler | 0/TBD | Not started | - |
+| 3. REST API + Scheduler | 0/2 | Planned | - |
 | 4. Map Web UI | 0/TBD | Not started | - |
 | 5. Geocoding + Dedup + Neighborhoods | 0/TBD | Not started | - |
 | 6. Madlan Scraper | 0/TBD | Not started | - |
