@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 1: Foundation** - DB schema, Alembic migrations, Docker Compose, project skeleton
 - [ ] **Phase 2: Yad2 Scraper + LLM Pipeline** - Yad2 Playwright scraper with LLM verification end-to-end
 - [ ] **Phase 3: REST API + Scheduler** - FastAPI endpoints, APScheduler with job lock, health checks
-- [ ] **Phase 4: Map Web UI** - React-Leaflet map, RTL layout, listing cards, seen/favorites, filters
+- [x] **Phase 4: Map Web UI** - React-Leaflet map, RTL layout, listing cards, seen/favorites, filters (completed 2026-04-02)
 - [ ] **Phase 5: Geocoding + Dedup + Neighborhoods** - Nominatim geocoding, cross-source dedup, neighborhood tagging
 - [ ] **Phase 6: Madlan Scraper** - Second structured source via Playwright + stealth
 - [ ] **Phase 7: Notifications** - WhatsApp (Twilio) and Web Push on new listings
@@ -88,7 +88,7 @@ Plans:
 - [x] 04-01-PLAN.md — Test infra + Vite config + MapView with listing pins (MAP-01, MAP-03, MAP-07, MAP-08)
 - [x] 04-02-PLAN.md — ListingSheet + FilterSheet + seen/favorites mutations (MAP-02, MAP-04, MAP-05)
 - [x] 04-03-PLAN.md — FavoritesView + BottomNav + routing (MAP-06)
-- [ ] 04-04-PLAN.md — Integration verification + visual checkpoint (all MAP requirements)
+- [x] 04-04-PLAN.md — Integration verification + visual checkpoint (all MAP requirements)
 **UI hint**: yes
 
 ### Phase 5: Geocoding + Dedup + Neighborhoods
@@ -145,7 +145,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 1. Foundation | 1/3 | In Progress|  |
 | 2. Yad2 Scraper + LLM Pipeline | 0/4 | Planned | - |
 | 3. REST API + Scheduler | 1/2 | In Progress|  |
-| 4. Map Web UI | 3/4 | In Progress|  |
+| 4. Map Web UI | 4/4 | Complete   | 2026-04-02 |
 | 5. Geocoding + Dedup + Neighborhoods | 0/TBD | Not started | - |
 | 6. Madlan Scraper | 0/TBD | Not started | - |
 | 7. Notifications | 0/TBD | Not started | - |
