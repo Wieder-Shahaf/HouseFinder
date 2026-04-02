@@ -23,7 +23,7 @@ created: 2026-04-02
 | Preset | not applicable | — |
 | Component library | none (Phase 4 will introduce shadcn) | — |
 | Icon library | none (Phase 4 will introduce lucide-react via shadcn) | — |
-| Font | Noto Sans Hebrew (Google Fonts CDN, weights 400 / 500 / 700) | index.html preconnect + link; index.css @theme --font-family-sans |
+| Font | Noto Sans Hebrew (Google Fonts CDN, weights 400 / 700) | index.html preconnect + link; index.css @theme --font-family-sans |
 | RTL | dir="rtl" lang="he" on html element | index.html — already enforced from Phase 1 |
 | Tailwind version | v4 (CSS-based config — @import tailwindcss + @theme in index.css; no tailwind.config.js) | STATE.md Phase 01 decision |
 
@@ -49,12 +49,12 @@ Exceptions: touch targets for interactive controls (seen/favorited buttons) must
 
 ## Typography
 
-**Source:** Noto Sans Hebrew loaded at weights 400, 500, 700 from Google Fonts. Three weights available; contract uses two (400 + 600-equivalent mapped to 700 for heading).
+**Source:** Noto Sans Hebrew loaded at weights 400 and 700 from Google Fonts. Contract uses exactly two weights: 400 (regular) for body and label text, 700 (bold) for headings and display. Size alone distinguishes Body (16px) from Label (14px).
 
 | Role | Size | Weight | Line Height | Tailwind class |
 |------|------|--------|-------------|----------------|
 | Body | 16px | 400 (regular) | 1.5 | `text-base font-normal leading-normal` |
-| Label | 14px | 500 (medium) | 1.4 | `text-sm font-medium leading-snug` |
+| Label | 14px | 400 (regular) | 1.4 | `text-sm font-normal leading-snug` |
 | Heading | 20px | 700 (bold) | 1.2 | `text-xl font-bold leading-tight` |
 | Display | 28px | 700 (bold) | 1.2 | `text-[28px] font-bold leading-tight` |
 
@@ -150,7 +150,7 @@ These existing UI elements must not be modified during Phase 3 backend work:
 | File | Protected element | Value |
 |------|------------------|-------|
 | `frontend/index.html` | `lang="he" dir="rtl"` on html | Must remain — RTL from day one (Phase 1 decision) |
-| `frontend/index.html` | Noto Sans Hebrew Google Fonts link (weights 400, 500, 700) | Must remain — font contract established |
+| `frontend/index.html` | Noto Sans Hebrew Google Fonts link (weights 400, 700) | Must remain — font contract established |
 | `frontend/src/index.css` | `@theme { --font-family-sans: 'Noto Sans Hebrew', sans-serif; }` | Must remain — Tailwind v4 font token |
 | `frontend/src/App.jsx` | Placeholder content | May be updated; bg-gray-50 background color must remain as dominant surface |
 
