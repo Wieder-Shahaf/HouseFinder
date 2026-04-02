@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-04-02T12:10:21.060Z"
+stopped_at: Completed 04-03-PLAN.md
+last_updated: "2026-04-02T12:13:13.709Z"
 last_activity: 2026-04-02
 progress:
   total_phases: 8
   completed_phases: 3
   total_plans: 13
-  completed_plans: 11
+  completed_plans: 12
   percent: 67
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 04 (map-web-ui) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-04-02
 
@@ -60,6 +60,7 @@ Progress: [██████░░░░] 67%
 | Phase 03-rest-api-scheduler P01 | 1 | 2 tasks | 6 files |
 | Phase 04-map-web-ui P01 | 3 | 2 tasks | 12 files |
 | Phase 04-map-web-ui P02 | 5 | 2 tasks | 7 files |
+| Phase 04-map-web-ui P03 | 5 | 1 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,8 @@ Recent decisions affecting current work:
 - [Phase 04-map-web-ui]: MapView empty state: absolute overlay on map container at z-index 1000 (map still renders behind)
 - [Phase 04-map-web-ui]: MapView owns all filter/sheet state internally (selectedListing, showFilters, filters) — no external props needed
 - [Phase 04-map-web-ui]: Multiple neighborhood selections result in no neighborhood filter (API takes single value)
+- [Phase 04-map-web-ui]: FavoritesView fetches data via useListings({ is_favorited: true }) — same hook as MapView, no new query pattern needed
+- [Phase 04-map-web-ui]: BottomNav rendered outside Routes in App.jsx so it persists across all route transitions
 
 ### Pending Todos
 
@@ -104,6 +107,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-02T12:10:21.057Z
-Stopped at: Completed 04-02-PLAN.md
+Last session: 2026-04-02T12:13:13.706Z
+Stopped at: Completed 04-03-PLAN.md
 Resume file: None
