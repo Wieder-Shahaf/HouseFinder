@@ -24,11 +24,9 @@ def get_health_state() -> dict[str, Optional[dict]]:
 
 
 async def run_yad2_scrape_job() -> None:
-    """APScheduler job: create own DB session, run Yad2 scraper, update health dict.
-
-    Uses async_session_factory directly — NOT FastAPI's Depends(get_db).
-    """
+    """APScheduler job: run Yad2 scraper → geocoding pass → dedup pass (D-12)."""
     from app.database import async_session_factory
+    from app.geocoding import run_dedup_pass, run_geocoding_pass
     from app.scrapers.yad2 import run_yad2_scraper
 
     started_at = datetime.now(timezone.utc)
@@ -36,6 +34,9 @@ async def run_yad2_scrape_job() -> None:
     try:
         async with async_session_factory() as session:
             result: ScraperResult = await run_yad2_scraper(session)
+            # Chain: geocode NULL-lat listings, then dedup by fingerprint (D-12)
+            await run_geocoding_pass(session)
+            await run_dedup_pass(session)
     except Exception as exc:
         logger.exception("Yad2 scrape job failed: %s", exc)
         result = ScraperResult(source="yad2", success=False, errors=[str(exc)])
