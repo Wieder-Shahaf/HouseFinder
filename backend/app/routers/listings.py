@@ -49,8 +49,8 @@ async def get_listings(
     if rooms_max is not None:
         filters.append(Listing.rooms <= rooms_max)
     if neighborhood is not None:
-        # D-05: address text matching — provisional until Phase 5 coordinate-based matching
-        filters.append(Listing.address.ilike(f"%{neighborhood}%"))
+        # D-03 Phase 5: exact match on geocoded neighborhood column (replaces provisional text search)
+        filters.append(Listing.neighborhood == neighborhood)
     if is_seen is not None:
         filters.append(Listing.is_seen == is_seen)
     if is_favorited is not None:

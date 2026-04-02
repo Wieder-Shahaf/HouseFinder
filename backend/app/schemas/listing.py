@@ -22,6 +22,7 @@ class ListingResponse(BaseModel):
     rooms: Optional[float] = None
     size_sqm: Optional[int] = None
     address: Optional[str] = None
+    neighborhood: Optional[str] = None  # D-03: added in Phase 5
     contact_info: Optional[str] = None
     post_date: Optional[datetime] = None
     url: Optional[str] = None
