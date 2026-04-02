@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 2: Yad2 Scraper + LLM Pipeline** - Yad2 Playwright scraper with LLM verification end-to-end
 - [ ] **Phase 3: REST API + Scheduler** - FastAPI endpoints, APScheduler with job lock, health checks
 - [x] **Phase 4: Map Web UI** - React-Leaflet map, RTL layout, listing cards, seen/favorites, filters (completed 2026-04-02)
-- [ ] **Phase 5: Geocoding + Dedup + Neighborhoods** - Nominatim geocoding, cross-source dedup, neighborhood tagging
+- [x] **Phase 5: Geocoding + Dedup + Neighborhoods** - Nominatim geocoding, cross-source dedup, neighborhood tagging (completed 2026-04-02)
 - [ ] **Phase 6: Madlan Scraper** - Second structured source via Playwright + stealth
 - [ ] **Phase 7: Notifications** - WhatsApp (Twilio) and Web Push on new listings
 - [ ] **Phase 8: Facebook Scrapers** - Groups and Marketplace with session management
@@ -103,7 +103,7 @@ Plans:
 Plans:
 - [x] 05-01-PLAN.md — Alembic migration + geocoding module (Nominatim + bounding-box tagger + unit tests)
 - [x] 05-02-PLAN.md — Google Maps Playwright fallback + dedup pass + APScheduler chain wiring
-- [ ] 05-03-PLAN.md — Router + schema update (neighborhood filter exact match) + end-to-end verification
+- [x] 05-03-PLAN.md — Router + schema update (neighborhood filter exact match) + end-to-end verification
 
 ### Phase 6: Madlan Scraper
 **Goal**: Madlan listings flow into the database alongside Yad2 listings, adding a second structured source with no disruption to the existing pipeline
@@ -150,7 +150,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 2. Yad2 Scraper + LLM Pipeline | 0/4 | Planned | - |
 | 3. REST API + Scheduler | 1/2 | In Progress|  |
 | 4. Map Web UI | 4/4 | Complete   | 2026-04-02 |
-| 5. Geocoding + Dedup + Neighborhoods | 2/3 | In Progress|  |
+| 5. Geocoding + Dedup + Neighborhoods | 3/3 | Complete   | 2026-04-02 |
 | 6. Madlan Scraper | 0/TBD | Not started | - |
 | 7. Notifications | 0/TBD | Not started | - |
 | 8. Facebook Scrapers | 0/TBD | Not started | - |

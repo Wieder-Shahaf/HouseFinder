@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: "Checkpoint: 05-03 Task 3 awaiting human end-to-end verification"
-last_updated: "2026-04-02T20:29:27.054Z"
+status: verifying
+stopped_at: Completed 05-03 (Router + Schema Update + End-to-End Verification) — Phase 05 complete
+last_updated: "2026-04-02T20:46:07.391Z"
 last_activity: 2026-04-02
 progress:
   total_phases: 8
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 
 Phase: 05 (geocoding-dedup-neighborhoods) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-02
 
 Progress: [██████░░░░] 67%
@@ -64,6 +64,7 @@ Progress: [██████░░░░] 67%
 | Phase 04-map-web-ui P04 | 10 | 2 tasks | 0 files |
 | Phase 05-geocoding-dedup-neighborhoods P05-01 | 3 | 3 tasks | 4 files |
 | Phase 05-geocoding-dedup-neighborhoods P05-02 | 3 | 3 tasks | 3 files |
+| Phase 05-geocoding-dedup-neighborhoods P05-03 | 4 | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -104,6 +105,7 @@ Recent decisions affecting current work:
 - [Phase 05-geocoding-dedup-neighborhoods]: Nominatim 'lon' string-to-float cast documented prominently — cast is mandatory as Nominatim JSON returns strings not numbers
 - [Phase 05-geocoding-dedup-neighborhoods]: Google Maps Playwright fallback uses http:// when Bright Data proxy is enabled (proxy handles SSL termination)
 - [Phase 05-geocoding-dedup-neighborhoods]: Dedup canonical is first-inserted (lowest id) per D-09 — deterministic and stable across reruns
+- [Phase 05-geocoding-dedup-neighborhoods]: Geocoders fail in Docker without internet but pipeline handles gracefully — lat stays NULL, retry on next pass
 
 ### Pending Todos
 
@@ -125,6 +127,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-02T20:29:27.051Z
-Stopped at: Checkpoint: 05-03 Task 3 awaiting human end-to-end verification
+Last session: 2026-04-02T20:46:07.389Z
+Stopped at: Completed 05-03 (Router + Schema Update + End-to-End Verification) — Phase 05 complete
 Resume file: None
