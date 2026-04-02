@@ -231,8 +231,62 @@ async def run_geocoding_pass(session: AsyncSession) -> None:
 
 
 async def run_dedup_pass(session: AsyncSession) -> None:
-    """Deactivate cross-source duplicate listings by fingerprint (D-08, D-09, D-11).
+    """Deactivate cross-source duplicate listings by dedup_fingerprint (D-08, D-09, D-11).
 
-    Implemented in Plan 05-02.
+    Algorithm:
+      1. Fetch all active listings that have a non-NULL dedup_fingerprint and lat/lng.
+      2. Group by fingerprint.
+      3. Within each group, keep the listing with the smallest id (first-inserted = canonical).
+      4. Bulk-set is_active=False for all others.
+
+    Only deactivates — never deletes. Canonical listing is the first-inserted per D-09.
     """
-    pass  # placeholder — full implementation in Plan 05-02
+    from sqlalchemy import update
+
+    stmt = select(Listing).where(
+        Listing.is_active == True,  # noqa: E712
+        Listing.dedup_fingerprint.isnot(None),
+        Listing.lat.isnot(None),
+        Listing.lng.isnot(None),
+    )
+    result = await session.execute(stmt)
+    listings = result.scalars().all()
+
+    if not listings:
+        logger.info("Dedup pass: no geocoded listings with fingerprints — nothing to do")
+        return
+
+    # Group by fingerprint
+    groups: dict[str, list[Listing]] = {}
+    for listing in listings:
+        fp = listing.dedup_fingerprint
+        groups.setdefault(fp, []).append(listing)
+
+    duplicate_ids: list[int] = []
+    for fp, group in groups.items():
+        if len(group) < 2:
+            continue
+        # Sort ascending by id — smallest id = first-inserted = canonical (D-09)
+        group.sort(key=lambda l: l.id)
+        canonical = group[0]
+        dupes = group[1:]
+        duplicate_ids.extend(d.id for d in dupes)
+        logger.info(
+            "Dedup: fingerprint=%s canonical_id=%d deactivating ids=%s",
+            fp[:12],
+            canonical.id,
+            [d.id for d in dupes],
+        )
+
+    if not duplicate_ids:
+        logger.info("Dedup pass: %d fingerprinted listings, no duplicates found", len(listings))
+        return
+
+    deactivate_stmt = (
+        update(Listing)
+        .where(Listing.id.in_(duplicate_ids))
+        .values(is_active=False)
+    )
+    await session.execute(deactivate_stmt)
+    await session.commit()
+    logger.info("Dedup pass complete: deactivated %d duplicate listings", len(duplicate_ids))
