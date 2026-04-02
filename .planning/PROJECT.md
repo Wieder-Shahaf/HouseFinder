@@ -14,18 +14,19 @@ New Haifa rental listings from all sources appear on a single live map every mor
 
 - [x] Periodic background scraping of Yad2 — APScheduler cron job, configurable interval (Validated in Phase 03: rest-api-scheduler)
 - [x] REST API for listings with filtering (price, rooms, neighborhood, recency, seen, favorited) — GET /listings + PUT mutations (Validated in Phase 03: rest-api-scheduler)
+- [x] Interactive map showing all listings as pins, filtered to Haifa (Carmel, Downtown, Neve Shanan) (Validated in Phase 04: map-web-ui)
+- [x] Listing card shows: price, rooms & size, contact info, post date, source — Leaflet Popup with image carousel (Validated in Phase 04: map-web-ui)
+- [x] Mark listings as "seen" (declutter map) and save favorites (bookmark to revisit) (Validated in Phase 04: map-web-ui)
+- [x] Mobile-responsive web app, usable on smartphone browser (Validated in Phase 04: map-web-ui)
+- [x] Full Hebrew UI with RTL layout — `lang="he" dir="rtl"`, Noto Sans Hebrew (Validated in Phase 04: map-web-ui)
 
 ### Active
 
 - [ ] Periodic background scraping of Facebook groups (user-defined list), Facebook Marketplace, Yad2, and Madlan
 - [ ] Listings stored in a database and deduplicated across sources
-- [ ] Interactive map showing all listings as pins, filtered to Haifa (Carmel, Downtown, Neve Shanan)
 - [ ] Default filters: rent up to 4,500 ₪/month, 2.5–3.5+ rooms
-- [ ] Listing card shows: price, rooms & size, contact info, post date, source
-- [ ] Mark listings as "seen" (declutter map) and save favorites (bookmark to revisit)
 - [ ] WhatsApp or push notification when a new listing is found
 - [ ] Mobile-responsive web app accessible via public URL (no native app required)
-- [ ] Full Hebrew UI with RTL layout
 
 ### Out of Scope
 
@@ -78,4 +79,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-02 — Phase 03 complete (APScheduler + REST API)*
+*Last updated: 2026-04-02 — Phase 04 complete (Map Web UI — Leaflet map, Hebrew RTL, seen/favorite, filters, favorites page, human-verified on mobile)*
