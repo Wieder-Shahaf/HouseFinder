@@ -30,6 +30,7 @@ class Listing(Base):
     rooms: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     size_sqm: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     address: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    neighborhood: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     contact_info: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     post_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     url: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
