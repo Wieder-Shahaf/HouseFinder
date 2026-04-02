@@ -58,14 +58,14 @@
 
 ### Map UI
 
-- [ ] **MAP-01**: Interactive map (React-Leaflet + OpenStreetMap) shows all listings as pins
+- [x] **MAP-01**: Interactive map (React-Leaflet + OpenStreetMap) shows all listings as pins
 - [ ] **MAP-02**: Clicking a pin opens a listing card showing: price, rooms, size, contact info, post date, source, link to original post
-- [ ] **MAP-03**: Map defaults to Haifa viewport (Carmel, Downtown, Neve Shanan)
+- [x] **MAP-03**: Map defaults to Haifa viewport (Carmel, Downtown, Neve Shanan)
 - [ ] **MAP-04**: Filter panel: price range slider (max 4,500 ₪), room count toggle (2.5 / 3 / 3.5+), neighborhood toggle, "new only" toggle (last 24h / 48h)
 - [ ] **MAP-05**: User can mark a listing as "seen" — pin fades and is hidden from the default view
 - [ ] **MAP-06**: User can save a listing as a favorite — pinned with a distinct icon, accessible in a favorites list
-- [ ] **MAP-07**: Full Hebrew RTL layout throughout the UI (dir="rtl" on html element from day one)
-- [ ] **MAP-08**: UI is mobile-responsive and usable on a smartphone browser (primary device)
+- [x] **MAP-07**: Full Hebrew RTL layout throughout the UI (dir="rtl" on html element from day one)
+- [x] **MAP-08**: UI is mobile-responsive and usable on a smartphone browser (primary device)
 
 ### Notifications
 
@@ -138,14 +138,14 @@
 | SCHED-01 | Phase 3 | Complete |
 | SCHED-02 | Phase 3 | Complete |
 | SCHED-03 | Phase 3 | Complete |
-| MAP-01 | Phase 4 | Pending |
+| MAP-01 | Phase 4 | Complete |
 | MAP-02 | Phase 4 | Pending |
-| MAP-03 | Phase 4 | Pending |
+| MAP-03 | Phase 4 | Complete |
 | MAP-04 | Phase 4 | Pending |
 | MAP-05 | Phase 4 | Pending |
 | MAP-06 | Phase 4 | Pending |
-| MAP-07 | Phase 4 | Pending |
-| MAP-08 | Phase 4 | Pending |
+| MAP-07 | Phase 4 | Complete |
+| MAP-08 | Phase 4 | Complete |
 | DATA-03 | Phase 5 | Pending |
 | DATA-04 | Phase 5 | Pending |
 | DATA-05 | Phase 5 | Pending |

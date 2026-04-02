@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-rest-api-scheduler 03-01-PLAN.md
-last_updated: "2026-04-02T11:15:13.068Z"
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-04-02T12:06:13.158Z"
 last_activity: 2026-04-02
 progress:
   total_phases: 8
   completed_phases: 3
-  total_plans: 9
-  completed_plans: 9
+  total_plans: 13
+  completed_plans: 10
   percent: 67
 ---
 
@@ -21,12 +21,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** New Haifa rental listings from all sources appear on a single live map every morning — no manual searching required.
-**Current focus:** Phase 03 — rest-api-scheduler
+**Current focus:** Phase 04 — map-web-ui
 
 ## Current Position
 
-Phase: 4
-Plan: Not started
+Phase: 04 (map-web-ui) — EXECUTING
+Plan: 2 of 4
 Status: Ready to execute
 Last activity: 2026-04-02
 
@@ -58,6 +58,7 @@ Progress: [██████░░░░] 67%
 | Phase 02-yad2-scraper-llm-pipeline P03 | 10 | 1 tasks | 2 files |
 | Phase 02-yad2-scraper-llm-pipeline P02 | 6 | 2 tasks | 2 files |
 | Phase 03-rest-api-scheduler P01 | 1 | 2 tasks | 6 files |
+| Phase 04-map-web-ui P01 | 3 | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,7 @@ Recent decisions affecting current work:
 - [Phase 02-yad2-scraper-llm-pipeline]: from __future__ import annotations added to yad2.py for Python 3.9 union type syntax compatibility
 - [Phase 03-rest-api-scheduler]: APScheduler embedded in FastAPI lifespan with deferred imports in job function to avoid circular dependencies
 - [Phase 03-rest-api-scheduler]: GET /api/health returns per-source scraper state (last_run, listings_inserted, success) from in-memory _health dict
+- [Phase 04-map-web-ui]: MapView empty state: absolute overlay on map container at z-index 1000 (map still renders behind)
 
 ### Pending Todos
 
@@ -99,6 +101,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-02T11:07:30.339Z
-Stopped at: Completed 03-rest-api-scheduler 03-01-PLAN.md
+Last session: 2026-04-02T12:06:13.156Z
+Stopped at: Completed 04-01-PLAN.md
 Resume file: None
