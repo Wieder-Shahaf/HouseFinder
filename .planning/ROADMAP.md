@@ -99,7 +99,11 @@ Plans:
   1. A listing inserted with a Hebrew address gains lat/lng coordinates asynchronously without blocking the scrape transaction
   2. The neighborhood filter on the map correctly separates listings into Carmel, Downtown (Merkaz), and Neve Shanan based on geocoded coordinates
   3. The same apartment posted on both Yad2 and Madlan (matching price, rooms, and coordinates within 100 m) appears as a single pin on the map, not two overlapping pins
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 05-01-PLAN.md — Alembic migration + geocoding module (Nominatim + bounding-box tagger + unit tests)
+- [ ] 05-02-PLAN.md — Google Maps Playwright fallback + dedup pass + APScheduler chain wiring
+- [ ] 05-03-PLAN.md — Router + schema update (neighborhood filter exact match) + end-to-end verification
 
 ### Phase 6: Madlan Scraper
 **Goal**: Madlan listings flow into the database alongside Yad2 listings, adding a second structured source with no disruption to the existing pipeline
@@ -146,7 +150,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 2. Yad2 Scraper + LLM Pipeline | 0/4 | Planned | - |
 | 3. REST API + Scheduler | 1/2 | In Progress|  |
 | 4. Map Web UI | 4/4 | Complete   | 2026-04-02 |
-| 5. Geocoding + Dedup + Neighborhoods | 0/TBD | Not started | - |
+| 5. Geocoding + Dedup + Neighborhoods | 0/3 | Not started | - |
 | 6. Madlan Scraper | 0/TBD | Not started | - |
 | 7. Notifications | 0/TBD | Not started | - |
 | 8. Facebook Scrapers | 0/TBD | Not started | - |
