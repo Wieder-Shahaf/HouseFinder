@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Planned Phase 05 (3 plans created)
-last_updated: "2026-04-02T00:00:00.000Z"
+stopped_at: Completed 05-geocoding-dedup-neighborhoods 05-01-PLAN.md
+last_updated: "2026-04-02T20:21:47.744Z"
 last_activity: 2026-04-02
 progress:
   total_phases: 8
   completed_phases: 4
-  total_plans: 13
-  completed_plans: 13
+  total_plans: 16
+  completed_plans: 14
   percent: 67
 ---
 
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 
 ## Current Position
 
-Phase: 5
-Plan: Not started (3 plans ready)
+Phase: 05 (geocoding-dedup-neighborhoods) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-04-02 - Planned Phase 05: 3 PLAN.md files created and verified
+Last activity: 2026-04-02
 
 Progress: [██████░░░░] 67%
 
@@ -62,6 +62,7 @@ Progress: [██████░░░░] 67%
 | Phase 04-map-web-ui P02 | 5 | 2 tasks | 7 files |
 | Phase 04-map-web-ui P03 | 5 | 1 tasks | 5 files |
 | Phase 04-map-web-ui P04 | 10 | 2 tasks | 0 files |
+| Phase 05-geocoding-dedup-neighborhoods P05-01 | 3 | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -98,6 +99,8 @@ Recent decisions affecting current work:
 - [Phase 04-map-web-ui]: All pin icons wrapped in 44×44px transparent hit area div for reliable mobile tap targets while keeping visual indicator small
 - [Phase 04-map-web-ui]: Vite API proxy target changed from localhost:8000 to http://backend:8000 (Docker service hostname) with VITE_API_URL env override; docker-compose.dev.yml frontend service now has explicit build config
 - [Phase 04-map-web-ui]: No code changes required in plan 04 — integration passed verification without fixes; human checkpoint approved on first pass
+- [Phase 05-geocoding-dedup-neighborhoods]: test_merkaz_center adjusted to lng=35.025 to avoid bbox overlap with כרמל (bounding boxes overlap at lat=32.825, lng=35.00-35.02)
+- [Phase 05-geocoding-dedup-neighborhoods]: Nominatim 'lon' string-to-float cast documented prominently — cast is mandatory as Nominatim JSON returns strings not numbers
 
 ### Pending Todos
 
@@ -119,6 +122,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-02T18:42:23.038Z
-Stopped at: Completed quick task 260402-v7j: Increase Yad2 Playwright scraper listing yield via scroll-to-load loop
+Last session: 2026-04-02T20:21:47.741Z
+Stopped at: Completed 05-geocoding-dedup-neighborhoods 05-01-PLAN.md
 Resume file: None
