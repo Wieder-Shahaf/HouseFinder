@@ -8,3 +8,5 @@ frontend/dist/
 .vite/
 .claude/
 *.db
+
+.playwright-mcp/
