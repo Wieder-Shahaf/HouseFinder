@@ -1,0 +1,26 @@
+[      -8ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://www.madlan.co.il/listing/seed-004/:0
+[     493ms] [WARNING] An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing. @ https://js.nagich.co.il/core/5.0.13/accessibility.js:0
+[     521ms] [LOG] %c[IND]%c You are running %c MacOS %c Operating system, %c Chrome %c browser, version: %c 146 color: White; background: #17384c; font-weight: bold; padding: 3px; border-radius:3px 0 0 3px; color: Black; background: #50e590; font-weight: bold; padding: 3px color: White; background: #17384c; font-weight: bold; padding: 3px; color: Black; background: #50e590; font-weight: bold; padding: 3px color: White; background: #17384c; font-weight: bold; padding: 3px; color: Black; background: #50e590; font-weight: bold; padding: 3px color: White; background: #17384c; font-weight: bold; padding: 3px; border-radius:0 3px 3px 0 @ https://js.nagich.co.il/core/5.0.13/accessibility.js:0
+[     521ms] [LOG] %c[IND]%c Version %c5.0.13%c color: White; background: #17384c; font-weight: bold; padding: 3px; border-radius:3px 0 0 3px; color: Black; background: #50e590; font-weight: bold; padding: 3px color: White; background: #17384c; font-weight: bold; padding: 3px; border-radius:0 3px 3px 0  @ https://js.nagich.co.il/core/5.0.13/accessibility.js:0
+[     650ms] [LOG] %c EvalError
+    at nl (http://client.px-cloud.net/PXo4wPDYYd/main.min.js:2:67275)
+    at po (http://client.px-cloud.net/PXo4wPDYYd/main.min.js:2:72855)
+    at In (http://client.px-cloud.net/PXo4wPDYYd/main.min.js:2:220675)
+    at Il (http://client.px-cloud.net/PXo4wPDYYd/main.min.js:2:220290)
+    at http://client.px-cloud.net/PXo4wPDYYd/main.min.js:2:222032
+    at http://client.px-cloud.net/PXo4wPDYYd/main.min.js:2:222038
+    at http://client.px-cloud.net/PXo4wPDYYd/main.min.js:2:222503 @ http://client.px-cloud.net/PXo4wPDYYd/main.min.js:1
+[     858ms] [LOG] {action: page_view, category: page, event_category: page, browser: Object, common: Object} @ https://images2.madlan.co.il/page404/events-min.js:0
+[    1810ms] [LOG] error: ReferenceError: ga is not defined @ :0
+[   10377ms] ReferenceError: fbq is not defined
+    at <anonymous>:1:1
+    at https://www.googletagmanager.com/gtm.js?id=GTM-5J9349D:978:429
+    at https://www.googletagmanager.com/gtm.js?id=GTM-5J9349D:979:132
+    at SQ (https://www.googletagmanager.com/gtm.js?id=GTM-5J9349D:980:31)
+    at Kd.RQ (https://www.googletagmanager.com/gtm.js?id=GTM-5J9349D:977:92)
+    at Kd.<anonymous> (https://www.googletagmanager.com/gtm.js?id=GTM-5J9349D:385:187)
+    at k.apply (https://www.googletagmanager.com/gtm.js?id=GTM-5J9349D:311:466)
+    at eb (https://www.googletagmanager.com/gtm.js?id=GTM-5J9349D:275:719)
+    at db (https://www.googletagmanager.com/gtm.js?id=GTM-5J9349D:275:470)
+    at Kd.<anonymous> (https://www.googletagmanager.com/gtm.js?id=GTM-5J9349D:335:473)
+[   22761ms] [LOG] error: ReferenceError: ga is not defined @ :0

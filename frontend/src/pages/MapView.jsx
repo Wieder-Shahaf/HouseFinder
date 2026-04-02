@@ -58,10 +58,11 @@ export default function MapView() {
   }
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div className="relative isolate">
       <MapContainer
         center={HAIFA_CENTER}
         zoom={DEFAULT_ZOOM}
+        className="z-0"
         style={{ height: 'calc(100dvh - 56px)', width: '100%' }}
         zoomControl={true}
       >
@@ -101,7 +102,8 @@ export default function MapView() {
       <button
         onClick={() => setShowFilters(true)}
         aria-label="סנן מודעות"
-        className="absolute top-4 right-4 z-30 bg-white rounded-full p-3 shadow-md min-h-[44px] min-w-[44px] flex items-center justify-center"
+        className="fixed top-4 right-4 z-[1400] bg-white rounded-full p-3 shadow-md min-h-[44px] min-w-[44px] flex items-center justify-center pointer-events-auto"
+        style={{ top: 'max(1rem, env(safe-area-inset-top, 0px))' }}
       >
         <SlidersHorizontal size={20} className="text-slate-700" />
       </button>

@@ -120,7 +120,7 @@ describe('FilterSheet', () => {
         onFilterChange={vi.fn()}
       />
     )
-    const backdrop = document.querySelector('.fixed.inset-0.z-40')
+    const backdrop = screen.getByTestId('filter-backdrop')
     expect(backdrop).toBeInTheDocument()
     fireEvent.click(backdrop)
     expect(onClose).toHaveBeenCalledTimes(1)
