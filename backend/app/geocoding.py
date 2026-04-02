@@ -12,6 +12,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import logging
+import re
 from math import atan2, cos, radians, sin, sqrt
 from typing import Optional
 
@@ -108,17 +109,73 @@ async def _geocode_nominatim(address: str) -> Optional[tuple[float, float]]:
         return None
 
 
-async def _geocode_address(address: str) -> Optional[tuple[float, float]]:
-    """Primary geocoding entry point. Nominatim only in Plan 05-01.
+async def _geocode_google_maps_fallback(address: str) -> Optional[tuple[float, float]]:
+    """Playwright + Bright Data Web Unlocker fallback geocoder.
 
-    Google Maps Playwright fallback is added in Plan 05-02 as an additional
-    elif branch after the Nominatim attempt returns None.
+    Navigates to Google Maps search for the address, waits for the URL to
+    contain the @lat,lng pattern, then extracts coordinates via regex.
+
+    When Bright Data proxy is active, uses http:// target (proxy handles SSL).
+    Returns None on any failure — listing will be retried next geocoding pass.
+    """
+    from app.scrapers.proxy import get_proxy_launch_args, is_proxy_enabled
+    from playwright.async_api import async_playwright
+
+    query = f"{address} חיפה"
+    # When proxy is active, use http:// — Bright Data Web Unlocker handles SSL (per proxy.py)
+    protocol = "http" if is_proxy_enabled() else "https"
+    search_url = f"{protocol}://www.google.com/maps/search/?api=1&query={query}"
+
+    try:
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True, **get_proxy_launch_args())
+            try:
+                page = await browser.new_page()
+                await page.goto(search_url, wait_until="domcontentloaded", timeout=30000)
+                # Google Maps rewrites URL to include @lat,lng after navigation
+                await page.wait_for_url(
+                    re.compile(r"@-?\d+\.\d+,-?\d+\.\d+"), timeout=15000
+                )
+                current_url = page.url
+                match = re.search(r"@(-?\d+\.\d+),(-?\d+\.\d+)", current_url)
+                if match:
+                    lat = float(match.group(1))
+                    lng = float(match.group(2))
+                    logger.info(
+                        "Google Maps fallback geocoded %r → (%f, %f)", address, lat, lng
+                    )
+                    return lat, lng
+                return None
+            except Exception as exc:
+                logger.warning(
+                    "Google Maps fallback failed for %r: %s", address, exc
+                )
+                return None
+            finally:
+                await browser.close()
+    except Exception as exc:
+        logger.warning("Playwright launch failed in geocoding fallback: %s", exc)
+        return None
+
+
+async def _geocode_address(address: str) -> Optional[tuple[float, float]]:
+    """Geocode cascade: Nominatim (primary) → Google Maps Playwright (fallback).
+
+    Returns (lat, lng) or None. None means both providers failed; leave lat=NULL
+    and the listing will be retried on the next pass (D-06).
     """
     result = await _geocode_nominatim(address)
     if result is not None:
         return result
-    # Fallback (Google Maps via Playwright) — wired in Plan 05-02
-    logger.info("Geocoding failed for address %r — will retry next pass", address)
+
+    logger.info(
+        "Nominatim returned no result for %r — trying Google Maps fallback", address
+    )
+    result = await _geocode_google_maps_fallback(address)
+    if result is not None:
+        return result
+
+    logger.info("All geocoding providers failed for %r — will retry next pass", address)
     return None
 
 
