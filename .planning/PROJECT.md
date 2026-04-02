@@ -79,4 +79,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-02 — Phase 04 complete (Map Web UI — Leaflet map, Hebrew RTL, seen/favorite, filters, favorites page, human-verified on mobile)*
+*Last updated: 2026-04-02 — Phase 05 complete (Geocoding + Dedup + Neighborhoods — Nominatim/Google Maps cascade, bounding-box neighborhood tagger, SHA-256 fingerprint dedup, exact-match neighborhood filter in API)*
