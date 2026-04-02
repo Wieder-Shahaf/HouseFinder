@@ -10,9 +10,6 @@ export default function ListingSheet({ listing, onClose }) {
 
   return (
     <>
-      {/* Backdrop overlay - click to dismiss per D-03 */}
-      <div onClick={onClose} className="fixed inset-0 z-40" />
-
       {/* Sheet container */}
       <div
         className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-lg transition-transform duration-300 ease-out"

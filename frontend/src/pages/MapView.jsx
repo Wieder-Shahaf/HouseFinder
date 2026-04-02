@@ -1,6 +1,11 @@
 import { useState } from 'react'
-import { MapContainer, TileLayer, Marker } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
+
+function MapClickHandler({ onMapClick }) {
+  useMapEvents({ click: onMapClick })
+  return null
+}
 import { SlidersHorizontal } from 'lucide-react'
 import { useListings } from '../hooks/useListings'
 import { createListingIcon } from '../components/ListingPin'
@@ -75,6 +80,7 @@ export default function MapView() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         />
+        <MapClickHandler onMapClick={() => setSelectedListing(null)} />
         {listingsWithCoords.map(listing => (
           <Marker
             key={listing.id}
