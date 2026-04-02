@@ -108,6 +108,7 @@ Recent decisions affecting current work:
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260402-uad | Integrate Bright Data Web Unlocker proxy into Yad2 scraper for CAPTCHA bypass | 2026-04-02 | ff5a1f5 | [260402-uad-integrate-bright-data-web-unlocker-proxy](./quick/260402-uad-integrate-bright-data-web-unlocker-proxy/) |
+| 260402-v7j | Increase Yad2 Playwright scraper listing yield via scroll-to-load loop | 2026-04-02 | 00c47a2 | [260402-v7j-increase-yad2-playwright-scraper-listing](./quick/260402-v7j-increase-yad2-playwright-scraper-listing/) |
 
 ### Blockers/Concerns
 
@@ -118,6 +119,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-02T18:36:36.109Z
-Stopped at: Completed 04-04-PLAN.md
+Last session: 2026-04-02T18:42:23.038Z
+Stopped at: Completed quick task 260402-v7j: Increase Yad2 Playwright scraper listing yield via scroll-to-load loop
 Resume file: None
