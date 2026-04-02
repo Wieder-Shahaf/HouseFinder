@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-04-02T12:06:13.158Z"
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-04-02T12:10:21.060Z"
 last_activity: 2026-04-02
 progress:
   total_phases: 8
   completed_phases: 3
   total_plans: 13
-  completed_plans: 10
+  completed_plans: 11
   percent: 67
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 04 (map-web-ui) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-04-02
 
@@ -59,6 +59,7 @@ Progress: [██████░░░░] 67%
 | Phase 02-yad2-scraper-llm-pipeline P02 | 6 | 2 tasks | 2 files |
 | Phase 03-rest-api-scheduler P01 | 1 | 2 tasks | 6 files |
 | Phase 04-map-web-ui P01 | 3 | 2 tasks | 12 files |
+| Phase 04-map-web-ui P02 | 5 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,8 @@ Recent decisions affecting current work:
 - [Phase 03-rest-api-scheduler]: APScheduler embedded in FastAPI lifespan with deferred imports in job function to avoid circular dependencies
 - [Phase 03-rest-api-scheduler]: GET /api/health returns per-source scraper state (last_run, listings_inserted, success) from in-memory _health dict
 - [Phase 04-map-web-ui]: MapView empty state: absolute overlay on map container at z-index 1000 (map still renders behind)
+- [Phase 04-map-web-ui]: MapView owns all filter/sheet state internally (selectedListing, showFilters, filters) — no external props needed
+- [Phase 04-map-web-ui]: Multiple neighborhood selections result in no neighborhood filter (API takes single value)
 
 ### Pending Todos
 
@@ -101,6 +104,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-02T12:06:13.156Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-04-02T12:10:21.057Z
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None

@@ -86,7 +86,7 @@ Plans:
 **Plans**: 4 plans
 Plans:
 - [x] 04-01-PLAN.md — Test infra + Vite config + MapView with listing pins (MAP-01, MAP-03, MAP-07, MAP-08)
-- [ ] 04-02-PLAN.md — ListingSheet + FilterSheet + seen/favorites mutations (MAP-02, MAP-04, MAP-05)
+- [x] 04-02-PLAN.md — ListingSheet + FilterSheet + seen/favorites mutations (MAP-02, MAP-04, MAP-05)
 - [ ] 04-03-PLAN.md — FavoritesView + BottomNav + routing (MAP-06)
 - [ ] 04-04-PLAN.md — Integration verification + visual checkpoint (all MAP requirements)
 **UI hint**: yes
@@ -145,7 +145,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 1. Foundation | 1/3 | In Progress|  |
 | 2. Yad2 Scraper + LLM Pipeline | 0/4 | Planned | - |
 | 3. REST API + Scheduler | 1/2 | In Progress|  |
-| 4. Map Web UI | 1/4 | In Progress|  |
+| 4. Map Web UI | 2/4 | In Progress|  |
 | 5. Geocoding + Dedup + Neighborhoods | 0/TBD | Not started | - |
 | 6. Madlan Scraper | 0/TBD | Not started | - |
 | 7. Notifications | 0/TBD | Not started | - |
