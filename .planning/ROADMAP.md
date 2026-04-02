@@ -71,7 +71,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 - [x] 03-01-PLAN.md — Scheduler module + health endpoint + test infrastructure (APScheduler, config, lifespan wiring)
-- [ ] 03-02-PLAN.md — Listings REST API (GET /listings filters, PUT seen/favorited, comprehensive tests)
+- [x] 03-02-PLAN.md — Listings REST API (GET /listings filters, PUT seen/favorited, comprehensive tests)
 
 ### Phase 4: Map Web UI
 **Goal**: Users can open the app on their phone and see all active Haifa listings on an interactive map with Hebrew RTL layout, filters, and seen/favorites controls
