@@ -6,12 +6,18 @@ from datetime import datetime, timezone
 from fastapi import FastAPI
 
 from app.config import settings
+from app.database import engine, Base
+from app.models import listing  # noqa: F401 — registers model with Base
 from app.routers.listings import router
 from app.scheduler import scheduler, run_yad2_scrape_job, get_health_state
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Create tables if they don't exist (idempotent)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
     # SCHED-03: embedded scheduler starts with FastAPI process
     scheduler.add_job(
         run_yad2_scrape_job,
