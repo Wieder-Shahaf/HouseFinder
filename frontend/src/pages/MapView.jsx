@@ -1,12 +1,40 @@
+import { useState } from 'react'
 import { MapContainer, TileLayer, Marker } from 'react-leaflet'
+import { SlidersHorizontal } from 'lucide-react'
 import { useListings } from '../hooks/useListings'
 import { createListingIcon } from '../components/ListingPin'
+import ListingSheet from '../components/ListingSheet'
+import FilterSheet from '../components/FilterSheet'
 
 const HAIFA_CENTER = [32.7940, 34.9896]
 const DEFAULT_ZOOM = 13
 
-export default function MapView({ filterParams = {}, onPinClick }) {
-  const { data, isLoading, isError } = useListings(filterParams)
+export default function MapView() {
+  const [selectedListing, setSelectedListing] = useState(null)
+  const [showFilters, setShowFilters] = useState(false)
+  const [filters, setFilters] = useState({})
+
+  // Build API params from filters state
+  const apiParams = {}
+  if (filters.price_max && filters.price_max < 4500) apiParams.price_max = filters.price_max
+  if (filters.rooms?.length === 1) {
+    const r = filters.rooms[0]
+    if (r === 3.5) {
+      apiParams.rooms_min = 3.5
+    } else {
+      apiParams.rooms_min = r
+      apiParams.rooms_max = r
+    }
+  } else if (filters.rooms?.length > 1) {
+    apiParams.rooms_min = Math.min(...filters.rooms)
+    // Only set max if 3.5+ is NOT selected
+    if (!filters.rooms.includes(3.5)) apiParams.rooms_max = Math.max(...filters.rooms)
+  }
+  // Neighborhood: API takes single value; if multiple selected, omit (show all)
+  if (filters.neighborhoods?.length === 1) apiParams.neighborhood = filters.neighborhoods[0]
+  if (filters.newOnly) apiParams.since_hours = 24
+
+  const { data, isLoading, isError } = useListings(apiParams)
 
   if (isLoading) {
     return (
@@ -51,7 +79,7 @@ export default function MapView({ filterParams = {}, onPinClick }) {
             key={listing.id}
             position={[listing.lat, listing.lng]}
             icon={createListingIcon(listing)}
-            eventHandlers={{ click: () => onPinClick?.(listing) }}
+            eventHandlers={{ click: () => setSelectedListing(listing) }}
           />
         ))}
       </MapContainer>
@@ -65,6 +93,23 @@ export default function MapView({ filterParams = {}, onPinClick }) {
           <p className="text-base text-slate-500">נסה לשנות את הסינון או לרענן</p>
         </div>
       )}
+
+      {/* Filter button - top-right corner per D-04 */}
+      <button
+        onClick={() => setShowFilters(true)}
+        aria-label="סנן מודעות"
+        className="absolute top-4 right-4 z-30 bg-white rounded-full p-3 shadow-md min-h-[44px] min-w-[44px] flex items-center justify-center"
+      >
+        <SlidersHorizontal size={20} className="text-slate-700" />
+      </button>
+
+      <ListingSheet listing={selectedListing} onClose={() => setSelectedListing(null)} />
+      <FilterSheet
+        isOpen={showFilters}
+        onClose={() => setShowFilters(false)}
+        filters={filters}
+        onFilterChange={setFilters}
+      />
     </div>
   )
 }
