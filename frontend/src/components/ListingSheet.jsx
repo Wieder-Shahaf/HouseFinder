@@ -1,4 +1,4 @@
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, X } from 'lucide-react'
 import { useMarkSeen, useMarkFavorited } from '../hooks/useListingMutations'
 import SourceBadge from './SourceBadge'
 
@@ -15,9 +15,16 @@ export default function ListingSheet({ listing, onClose }) {
         className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-lg transition-transform duration-300 ease-out"
         style={{ height: '60vh' }}
       >
-        {/* Drag handle visual (non-interactive per UI-SPEC) */}
-        <div className="flex justify-center pt-3 pb-2">
-          <div className="w-10 h-1 rounded-full bg-slate-300" />
+        {/* Header: drag handle + close button */}
+        <div className="flex items-center justify-between pt-3 pb-2 px-4">
+          <div className="w-10 h-1 rounded-full bg-slate-300 mx-auto" />
+          <button
+            onClick={onClose}
+            aria-label="סגור"
+            className="absolute left-4 top-3 min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-400 hover:text-slate-600"
+          >
+            <X size={20} />
+          </button>
         </div>
 
         {/* Content with padding */}

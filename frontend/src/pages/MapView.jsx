@@ -1,11 +1,6 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
-
-function MapClickHandler({ onMapClick }) {
-  useMapEvents({ click: onMapClick })
-  return null
-}
 import { SlidersHorizontal } from 'lucide-react'
 import { useListings } from '../hooks/useListings'
 import { createListingIcon } from '../components/ListingPin'
@@ -15,10 +10,23 @@ import FilterSheet from '../components/FilterSheet'
 const HAIFA_CENTER = [32.7940, 34.9896]
 const DEFAULT_ZOOM = 13
 
+// Closes the sheet when the map background is tapped,
+// but only if a pin was NOT just tapped (pinJustClicked guard).
+function MapClickHandler({ onMapClick, pinJustClicked }) {
+  useMapEvents({
+    click: () => {
+      if (pinJustClicked.current) return
+      onMapClick()
+    },
+  })
+  return null
+}
+
 export default function MapView() {
   const [selectedListing, setSelectedListing] = useState(null)
   const [showFilters, setShowFilters] = useState(false)
   const [filters, setFilters] = useState({})
+  const pinJustClicked = useRef(false)
 
   // Build API params from filters state
   const apiParams = {}
@@ -33,10 +41,8 @@ export default function MapView() {
     }
   } else if (filters.rooms?.length > 1) {
     apiParams.rooms_min = Math.min(...filters.rooms)
-    // Only set max if 3.5+ is NOT selected
     if (!filters.rooms.includes(3.5)) apiParams.rooms_max = Math.max(...filters.rooms)
   }
-  // Neighborhood: API takes single value; if multiple selected, omit (show all)
   if (filters.neighborhoods?.length === 1) apiParams.neighborhood = filters.neighborhoods[0]
   if (filters.newOnly) apiParams.since_hours = 24
 
@@ -80,13 +86,23 @@ export default function MapView() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         />
-        <MapClickHandler onMapClick={() => setSelectedListing(null)} />
+        <MapClickHandler
+          onMapClick={() => setSelectedListing(null)}
+          pinJustClicked={pinJustClicked}
+        />
         {listingsWithCoords.map(listing => (
           <Marker
             key={listing.id}
             position={[listing.lat, listing.lng]}
             icon={createListingIcon(listing)}
-            eventHandlers={{ click: (e) => { L.DomEvent.stopPropagation(e); setSelectedListing(listing) } }}
+            eventHandlers={{
+              click: (e) => {
+                L.DomEvent.stopPropagation(e)
+                pinJustClicked.current = true
+                setTimeout(() => { pinJustClicked.current = false }, 300)
+                setSelectedListing(listing)
+              },
+            }}
           />
         ))}
       </MapContainer>
@@ -101,7 +117,7 @@ export default function MapView() {
         </div>
       )}
 
-      {/* Filter button - top-right corner per D-04 */}
+      {/* Filter button - top-right corner */}
       <button
         onClick={() => setShowFilters(true)}
         aria-label="סנן מודעות"
