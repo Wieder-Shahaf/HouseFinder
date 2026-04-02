@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 Phase: 5
 Plan: Not started
 Status: Ready to execute
-Last activity: 2026-04-02
+Last activity: 2026-04-02 - Completed quick task 260402-uad: Integrate Bright Data Web Unlocker proxy into Yad2 scraper for CAPTCHA bypass
 
 Progress: [██████░░░░] 67%
 
@@ -102,6 +102,12 @@ Recent decisions affecting current work:
 ### Pending Todos
 
 - ACTION REQUIRED: Submit Twilio WhatsApp message template to Meta for approval during Phase 1 — approval takes days to weeks and blocks Phase 7. Template: "{{count}} new listings found in Haifa. Open app: {{url}}"
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260402-uad | Integrate Bright Data Web Unlocker proxy into Yad2 scraper for CAPTCHA bypass | 2026-04-02 | ff5a1f5 | [260402-uad-integrate-bright-data-web-unlocker-proxy](./quick/260402-uad-integrate-bright-data-web-unlocker-proxy/) |
 
 ### Blockers/Concerns
 
