@@ -12,7 +12,8 @@ New Haifa rental listings from all sources appear on a single live map every mor
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Periodic background scraping of Yad2 — APScheduler cron job, configurable interval (Validated in Phase 03: rest-api-scheduler)
+- [x] REST API for listings with filtering (price, rooms, neighborhood, recency, seen, favorited) — GET /listings + PUT mutations (Validated in Phase 03: rest-api-scheduler)
 
 ### Active
 
@@ -77,4 +78,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-28 after initialization*
+*Last updated: 2026-04-02 — Phase 03 complete (APScheduler + REST API)*
