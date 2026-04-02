@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { MapContainer, TileLayer, Marker } from 'react-leaflet'
+import L from 'leaflet'
 import { SlidersHorizontal } from 'lucide-react'
 import { useListings } from '../hooks/useListings'
 import { createListingIcon } from '../components/ListingPin'
@@ -79,7 +80,7 @@ export default function MapView() {
             key={listing.id}
             position={[listing.lat, listing.lng]}
             icon={createListingIcon(listing)}
-            eventHandlers={{ click: () => setSelectedListing(listing) }}
+            eventHandlers={{ click: (e) => { L.DomEvent.stopPropagation(e); setSelectedListing(listing) } }}
           />
         ))}
       </MapContainer>
