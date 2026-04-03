@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 07-01 (Backend Notification Pipeline) — Push notifications wired
-last_updated: "2026-04-03T16:13:38.938Z"
+status: verifying
+stopped_at: Completed 07-02 (Frontend Push Notification Pipeline) — Service worker, PWA manifest, and push subscription hook complete
+last_updated: "2026-04-03T16:16:36.259Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 8
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 19
-  completed_plans: 18
+  completed_plans: 19
   percent: 67
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 
 Phase: 07 (notifications) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-03
 
 Progress: [██████░░░░] 67%
@@ -67,6 +67,7 @@ Progress: [██████░░░░] 67%
 | Phase 05-geocoding-dedup-neighborhoods P05-03 | 4 | 3 tasks | 3 files |
 | Phase 06-madlan-scraper P01 | 21 | 2 tasks | 5 files |
 | Phase 07-notifications P01 | 15 | 2 tasks | 11 files |
+| Phase 07-notifications P02 | 2 | 1 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -111,6 +112,9 @@ Recent decisions affecting current work:
 - [Phase 06-madlan-scraper]: Madlan PerimeterX+Cloudflare blocks datacenter IPs — scraper requires Bright Data proxy or residential IP in production; listing URL pattern /listings/{id} confirmed via public sitemap
 - [Phase 06-madlan-scraper]: Three-strategy extraction for Madlan: XHR interception (primary) → __NEXT_DATA__ (secondary) → DOM parsing (tertiary); parse_listing() handles both nested address.neighborhood.text and flat field structures
 - [Phase 07-notifications]: pywebpush 2.1.2 used instead of 2.3.0 (plan spec) — 2.3.0 doesn't exist on PyPI; 2.1.2 is latest with identical webpush() API
+- [Phase 07-notifications]: VAPID public key fetched from backend GET /api/push/vapid-public-key at subscription time — avoids frontend env var requirement
+- [Phase 07-notifications]: iOS Web Push requires manifest.json display:standalone — critical for iOS 16.4+ push support
+- [Phase 07-notifications]: dir:rtl and lang:he set in SW notification options for correct Hebrew text rendering in browser notification UI
 
 ### Pending Todos
 
@@ -132,6 +136,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-03T16:13:38.935Z
-Stopped at: Completed 07-01 (Backend Notification Pipeline) — Push notifications wired
+Last session: 2026-04-03T16:16:36.256Z
+Stopped at: Completed 07-02 (Frontend Push Notification Pipeline) — Service worker, PWA manifest, and push subscription hook complete
 Resume file: None
