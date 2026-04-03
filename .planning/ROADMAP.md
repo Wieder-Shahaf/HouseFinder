@@ -128,7 +128,7 @@ Plans:
   3. A WhatsApp send_whatsapp() stub exists for future activation after Meta template approval
 **Plans**: 2 plans
 Plans:
-- [ ] 07-01-PLAN.md — Backend: Alembic migration + notifier module + push router + scheduler wiring + tests (NOTF-01, NOTF-02, NOTF-03, NOTF-04)
+- [x] 07-01-PLAN.md — Backend: Alembic migration + notifier module + push router + scheduler wiring + tests (NOTF-01, NOTF-02, NOTF-03, NOTF-04)
 - [ ] 07-02-PLAN.md — Frontend: service worker + manifest + push subscription hook + App wiring (NOTF-03)
 
 ### Phase 8: Facebook Scrapers
@@ -156,5 +156,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 4. Map Web UI | 4/4 | Complete   | 2026-04-02 |
 | 5. Geocoding + Dedup + Neighborhoods | 3/3 | Complete   | 2026-04-02 |
 | 6. Madlan Scraper | 1/1 | Complete   | 2026-04-03 |
-| 7. Notifications | 0/2 | Planned | - |
+| 7. Notifications | 1/2 | In Progress|  |
 | 8. Facebook Scrapers | 0/TBD | Not started | - |

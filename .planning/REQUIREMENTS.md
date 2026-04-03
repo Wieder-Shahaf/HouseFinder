@@ -69,10 +69,10 @@
 
 ### Notifications
 
-- [ ] **NOTF-01**: WhatsApp message sent to user when a new listing is found (Twilio WhatsApp API)
-- [ ] **NOTF-02**: WhatsApp message includes: price, rooms, neighborhood, link to listing
-- [ ] **NOTF-03**: Web Push notification sent as fallback (or simultaneously) for new listings
-- [ ] **NOTF-04**: Notifications are rate-limited — no more than one batch per scraper run (not per individual listing)
+- [x] **NOTF-01**: WhatsApp message sent to user when a new listing is found (Twilio WhatsApp API)
+- [x] **NOTF-02**: WhatsApp message includes: price, rooms, neighborhood, link to listing
+- [x] **NOTF-03**: Web Push notification sent as fallback (or simultaneously) for new listings
+- [x] **NOTF-04**: Notifications are rate-limited — no more than one batch per scraper run (not per individual listing)
 
 ### Infrastructure
 
@@ -152,10 +152,10 @@
 | MADL-01 | Phase 6 | Complete |
 | MADL-02 | Phase 6 | Complete |
 | MADL-03 | Phase 6 | Complete |
-| NOTF-01 | Phase 7 | Pending |
-| NOTF-02 | Phase 7 | Pending |
-| NOTF-03 | Phase 7 | Pending |
-| NOTF-04 | Phase 7 | Pending |
+| NOTF-01 | Phase 7 | Complete |
+| NOTF-02 | Phase 7 | Complete |
+| NOTF-03 | Phase 7 | Complete |
+| NOTF-04 | Phase 7 | Complete |
 | FBGR-01 | Phase 8 | Pending |
 | FBGR-02 | Phase 8 | Pending |
 | FBGR-03 | Phase 8 | Pending |
