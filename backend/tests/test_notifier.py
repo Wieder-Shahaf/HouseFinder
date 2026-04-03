@@ -72,9 +72,12 @@ async def test_sends_push_when_new_listings(db_session):
 
     mock_webpush.assert_called_once()
     call_kwargs = mock_webpush.call_args
-    # Payload must include Hebrew count message
-    payload_data = call_kwargs.kwargs.get("data") or call_kwargs.args[1] if call_kwargs.args else call_kwargs.kwargs.get("data")
-    assert "2 דירות חדשות" in payload_data
+    # Payload must include Hebrew count message (data is a keyword arg)
+    payload_data = call_kwargs.kwargs.get("data", "")
+    if not payload_data and call_kwargs.args:
+        # Fallback: positional args — data is 2nd positional arg (index 1)
+        payload_data = call_kwargs.args[1] if len(call_kwargs.args) > 1 else ""
+    assert "2 דירות חדשות" in payload_data, f"Expected Hebrew count in payload, got: {payload_data!r}"
 
 
 @pytest.mark.asyncio

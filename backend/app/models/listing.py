@@ -44,6 +44,7 @@ class Listing(Base):
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
     )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    notified_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     # D-05: Same-source deduplication constraint
     __table_args__ = (

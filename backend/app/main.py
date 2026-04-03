@@ -9,6 +9,7 @@ from app.config import settings
 from app.database import engine, Base
 from app.models import listing  # noqa: F401 — registers model with Base
 from app.routers.listings import router
+from app.routers.push import router as push_router
 from app.scheduler import scheduler, run_yad2_scrape_job, run_madlan_scrape_job, get_health_state
 
 
@@ -67,3 +68,4 @@ async def health():
 
 
 app.include_router(router)
+app.include_router(push_router)

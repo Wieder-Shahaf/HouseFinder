@@ -38,5 +38,10 @@ class Settings(BaseSettings):
     bright_data_user: str = ""   # e.g. "brd-customer-xxx-zone-web_unlocker1"
     bright_data_pass: str = ""
 
+    # Web Push (VAPID) settings (Phase 7)
+    vapid_public_key: str = ""
+    vapid_private_key: str = ""
+    vapid_contact_email: str = "admin@localhost"
+
 
 settings = Settings()
