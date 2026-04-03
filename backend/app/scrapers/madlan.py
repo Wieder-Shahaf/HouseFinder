@@ -171,10 +171,16 @@ async def fetch_madlan_browser(url: str) -> list[dict]:
 
         page.on("response", handle_response)
 
-        await page.goto(url, wait_until="load", timeout=60000)
+        logger.info(f"[madlan] Navigating to: {url}")
+        try:
+            resp = await page.goto(url, wait_until="domcontentloaded", timeout=60000)
+            logger.info(f"[madlan] goto returned status={resp.status if resp else 'None'}, url={page.url}")
+        except Exception as nav_err:
+            logger.error(f"[madlan] goto failed: {nav_err}")
+            return []
 
         # Wait for initial JS hydration
-        INITIAL_WAIT_MS = 4000
+        INITIAL_WAIT_MS = 6000
         await page.wait_for_timeout(INITIAL_WAIT_MS)
 
         # Scroll-to-load constants — mirrors Yad2 pattern
