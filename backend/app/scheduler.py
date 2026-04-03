@@ -25,9 +25,10 @@ def get_health_state() -> dict[str, Optional[dict]]:
 
 
 async def run_yad2_scrape_job() -> None:
-    """APScheduler job: run Yad2 scraper → geocoding pass → dedup pass (D-12)."""
+    """APScheduler job: run Yad2 scraper → geocoding pass → dedup pass → notify (D-12)."""
     from app.database import async_session_factory
     from app.geocoding import run_dedup_pass, run_geocoding_pass
+    from app.notifier import run_notification_job  # deferred import
     from app.scrapers.yad2 import run_yad2_scraper
 
     started_at = datetime.now(timezone.utc)
@@ -38,6 +39,7 @@ async def run_yad2_scrape_job() -> None:
             # Chain: geocode NULL-lat listings, then dedup by fingerprint (D-12)
             await run_geocoding_pass(session)
             await run_dedup_pass(session)
+            await run_notification_job(session, started_at)
     except Exception as exc:
         logger.exception("Yad2 scrape job failed: %s", exc)
         result = ScraperResult(source="yad2", success=False, errors=[str(exc)])
@@ -60,9 +62,10 @@ async def run_yad2_scrape_job() -> None:
 
 
 async def run_madlan_scrape_job() -> None:
-    """APScheduler job: run Madlan scraper → geocoding pass → dedup pass."""
+    """APScheduler job: run Madlan scraper → geocoding pass → dedup pass → notify."""
     from app.database import async_session_factory
     from app.geocoding import run_dedup_pass, run_geocoding_pass
+    from app.notifier import run_notification_job  # deferred import
     from app.scrapers.madlan import run_madlan_scraper  # deferred import (Phase 3 pattern)
 
     started_at = datetime.now(timezone.utc)
@@ -72,6 +75,7 @@ async def run_madlan_scrape_job() -> None:
             result: ScraperResult = await run_madlan_scraper(session)
             await run_geocoding_pass(session)
             await run_dedup_pass(session)
+            await run_notification_job(session, started_at)
     except Exception as exc:
         logger.exception("Madlan scrape job failed: %s", exc)
         result = ScraperResult(source="madlan", success=False, errors=[str(exc)])

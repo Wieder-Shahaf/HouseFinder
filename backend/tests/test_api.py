@@ -198,3 +198,52 @@ async def test_health_with_scraper_state(client):
     assert data["scrapers"]["yad2"]["success"] is True
     # Reset
     _health["yad2"] = None
+
+
+# ────────────────────────────────────────────
+# Phase 7: Push notification endpoints
+# ────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_push_subscribe(client):
+    """POST /api/push/subscribe stores subscription JSON and returns {"status": "ok"}."""
+    from unittest.mock import patch, MagicMock
+
+    subscription_body = {
+        "endpoint": "https://push.example.com/push/abc",
+        "keys": {"p256dh": "test-p256dh-key", "auth": "test-auth-key"},
+    }
+
+    written_content = {}
+
+    def mock_write_text(content, encoding="utf-8"):
+        written_content["data"] = content
+
+    with patch("app.routers.push.SUBSCRIPTION_FILE") as mock_path:
+        mock_path.write_text = mock_write_text
+        response = await client.post("/api/push/subscribe", json=subscription_body)
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+    # Verify written content matches the request body
+    import json
+    assert written_content.get("data") is not None
+    stored = json.loads(written_content["data"])
+    assert stored["endpoint"] == subscription_body["endpoint"]
+    assert stored["keys"]["p256dh"] == subscription_body["keys"]["p256dh"]
+    assert stored["keys"]["auth"] == subscription_body["keys"]["auth"]
+
+
+@pytest.mark.asyncio
+async def test_vapid_public_key(client):
+    """GET /api/push/vapid-public-key returns {"publicKey": "<configured key>"}."""
+    from unittest.mock import patch
+
+    with patch("app.routers.push.settings") as mock_settings:
+        mock_settings.vapid_public_key = "test-key-123"
+        response = await client.get("/api/push/vapid-public-key")
+
+    assert response.status_code == 200
+    assert response.json() == {"publicKey": "test-key-123"}
