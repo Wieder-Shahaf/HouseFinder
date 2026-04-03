@@ -113,7 +113,9 @@ Plans:
   1. Running the Madlan scraper manually produces listings in the database with source badge "מדלן" and all standard fields populated
   2. Madlan scraper failure is isolated — a broken Madlan run does not prevent the Yad2 scraper from completing its run
   3. Madlan is included in the APScheduler rotation and appears in `GET /health` with its own last-run timestamp and listing count
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 06-01-PLAN.md — Madlan scraper: DevTools discovery + Playwright scraper + scheduler integration + tests (MADL-01, MADL-02, MADL-03)
 **Research flag**: Madlan's API/GraphQL shape is low-confidence and must be discovered via network inspection at build time.
 
 ### Phase 7: Notifications
@@ -151,6 +153,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 3. REST API + Scheduler | 1/2 | In Progress|  |
 | 4. Map Web UI | 4/4 | Complete   | 2026-04-02 |
 | 5. Geocoding + Dedup + Neighborhoods | 3/3 | Complete   | 2026-04-02 |
-| 6. Madlan Scraper | 0/TBD | Not started | - |
+| 6. Madlan Scraper | 0/1 | Not started | - |
 | 7. Notifications | 0/TBD | Not started | - |
 | 8. Facebook Scrapers | 0/TBD | Not started | - |
