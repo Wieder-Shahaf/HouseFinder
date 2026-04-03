@@ -14,9 +14,9 @@
 
 ### Scraping — Madlan
 
-- [ ] **MADL-01**: Scraper fetches active rental listings in Haifa filtered by neighborhoods and price ≤ 4,500 ₪
-- [ ] **MADL-02**: Scraper extracts same fields as Yad2 (title, price, rooms, size, address, contact, date, URL)
-- [ ] **MADL-03**: Scraper runs via Playwright with stealth; Madlan failure is isolated
+- [x] **MADL-01**: Scraper fetches active rental listings in Haifa filtered by neighborhoods and price ≤ 4,500 ₪
+- [x] **MADL-02**: Scraper extracts same fields as Yad2 (title, price, rooms, size, address, contact, date, URL)
+- [x] **MADL-03**: Scraper runs via Playwright with stealth; Madlan failure is isolated
 
 ### Scraping — Facebook Groups
 
@@ -149,9 +149,9 @@
 | DATA-03 | Phase 5 | Complete |
 | DATA-04 | Phase 5 | Complete |
 | DATA-05 | Phase 5 | Complete |
-| MADL-01 | Phase 6 | Pending |
-| MADL-02 | Phase 6 | Pending |
-| MADL-03 | Phase 6 | Pending |
+| MADL-01 | Phase 6 | Complete |
+| MADL-02 | Phase 6 | Complete |
+| MADL-03 | Phase 6 | Complete |
 | NOTF-01 | Phase 7 | Pending |
 | NOTF-02 | Phase 7 | Pending |
 | NOTF-03 | Phase 7 | Pending |

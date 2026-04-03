@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 3: REST API + Scheduler** - FastAPI endpoints, APScheduler with job lock, health checks
 - [x] **Phase 4: Map Web UI** - React-Leaflet map, RTL layout, listing cards, seen/favorites, filters (completed 2026-04-02)
 - [x] **Phase 5: Geocoding + Dedup + Neighborhoods** - Nominatim geocoding, cross-source dedup, neighborhood tagging (completed 2026-04-02)
-- [ ] **Phase 6: Madlan Scraper** - Second structured source via Playwright + stealth
+- [x] **Phase 6: Madlan Scraper** - Second structured source via Playwright + stealth (completed 2026-04-03)
 - [ ] **Phase 7: Notifications** - WhatsApp (Twilio) and Web Push on new listings
 - [ ] **Phase 8: Facebook Scrapers** - Groups and Marketplace with session management
 
@@ -115,7 +115,7 @@ Plans:
   3. Madlan is included in the APScheduler rotation and appears in `GET /health` with its own last-run timestamp and listing count
 **Plans**: 1 plan
 Plans:
-- [ ] 06-01-PLAN.md — Madlan scraper: DevTools discovery + Playwright scraper + scheduler integration + tests (MADL-01, MADL-02, MADL-03)
+- [x] 06-01-PLAN.md — Madlan scraper: DevTools discovery + Playwright scraper + scheduler integration + tests (MADL-01, MADL-02, MADL-03)
 **Research flag**: Madlan's API/GraphQL shape is low-confidence and must be discovered via network inspection at build time.
 
 ### Phase 7: Notifications
@@ -153,6 +153,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 3. REST API + Scheduler | 1/2 | In Progress|  |
 | 4. Map Web UI | 4/4 | Complete   | 2026-04-02 |
 | 5. Geocoding + Dedup + Neighborhoods | 3/3 | Complete   | 2026-04-02 |
-| 6. Madlan Scraper | 0/1 | Not started | - |
+| 6. Madlan Scraper | 1/1 | Complete   | 2026-04-03 |
 | 7. Notifications | 0/TBD | Not started | - |
 | 8. Facebook Scrapers | 0/TBD | Not started | - |

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 05-03 (Router + Schema Update + End-to-End Verification) — Phase 05 complete
-last_updated: "2026-04-02T20:50:02.618Z"
-last_activity: 2026-04-02
+stopped_at: Completed 06-01 (Madlan Scraper Core + Scheduler Integration) — Phase 06 complete
+last_updated: "2026-04-03T09:17:37.992Z"
+last_activity: 2026-04-03
 progress:
   total_phases: 8
-  completed_phases: 5
-  total_plans: 16
-  completed_plans: 16
+  completed_phases: 6
+  total_plans: 17
+  completed_plans: 17
   percent: 67
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** New Haifa rental listings from all sources appear on a single live map every morning — no manual searching required.
-**Current focus:** Phase 05 — geocoding-dedup-neighborhoods
+**Current focus:** Phase 06 — madlan-scraper
 
 ## Current Position
 
-Phase: 6
-Plan: Not started
+Phase: 06 (madlan-scraper) — EXECUTING
+Plan: 1 of 1
 Status: Phase complete — ready for verification
-Last activity: 2026-04-02
+Last activity: 2026-04-03
 
 Progress: [██████░░░░] 67%
 
@@ -65,6 +65,7 @@ Progress: [██████░░░░] 67%
 | Phase 05-geocoding-dedup-neighborhoods P05-01 | 3 | 3 tasks | 4 files |
 | Phase 05-geocoding-dedup-neighborhoods P05-02 | 3 | 3 tasks | 3 files |
 | Phase 05-geocoding-dedup-neighborhoods P05-03 | 4 | 3 tasks | 3 files |
+| Phase 06-madlan-scraper P01 | 21 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -106,6 +107,8 @@ Recent decisions affecting current work:
 - [Phase 05-geocoding-dedup-neighborhoods]: Google Maps Playwright fallback uses http:// when Bright Data proxy is enabled (proxy handles SSL termination)
 - [Phase 05-geocoding-dedup-neighborhoods]: Dedup canonical is first-inserted (lowest id) per D-09 — deterministic and stable across reruns
 - [Phase 05-geocoding-dedup-neighborhoods]: Geocoders fail in Docker without internet but pipeline handles gracefully — lat stays NULL, retry on next pass
+- [Phase 06-madlan-scraper]: Madlan PerimeterX+Cloudflare blocks datacenter IPs — scraper requires Bright Data proxy or residential IP in production; listing URL pattern /listings/{id} confirmed via public sitemap
+- [Phase 06-madlan-scraper]: Three-strategy extraction for Madlan: XHR interception (primary) → __NEXT_DATA__ (secondary) → DOM parsing (tertiary); parse_listing() handles both nested address.neighborhood.text and flat field structures
 
 ### Pending Todos
 
@@ -127,6 +130,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-02T20:46:07.389Z
-Stopped at: Completed 05-03 (Router + Schema Update + End-to-End Verification) — Phase 05 complete
+Last session: 2026-04-03T09:17:37.989Z
+Stopped at: Completed 06-01 (Madlan Scraper Core + Scheduler Integration) — Phase 06 complete
 Resume file: None
