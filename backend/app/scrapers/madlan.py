@@ -514,7 +514,7 @@ def parse_listing(item: dict) -> dict | None:
     # Size
     size_sqm = _parse_int_sqm(item)
 
-    # Address (handle nested address object from Madlan)
+    # Address (handle nested address object from Madlan, with flat-field fallback)
     address_obj = item.get("address") or {}
     if isinstance(address_obj, dict):
         neighborhood = (address_obj.get("neighborhood") or {}).get("text", "") or ""
@@ -522,10 +522,15 @@ def parse_listing(item: dict) -> dict | None:
         city = (address_obj.get("city") or {}).get("text", "") or ""
         house_num = str(address_obj.get("houseNum") or "").strip()
     else:
-        neighborhood = item.get("neighborhood", "") or ""
-        street = item.get("street", "") or ""
-        city = item.get("city", "") or ""
+        neighborhood = ""
+        street = ""
+        city = ""
         house_num = ""
+
+    # Flat-field fallback: if nested address yielded empty values, try direct item keys
+    neighborhood = neighborhood or item.get("neighborhood", "") or ""
+    street = street or item.get("street", "") or ""
+    city = city or item.get("city", "") or ""
 
     street_full = f"{street} {house_num}".strip() if house_num else street
     address_parts = [p for p in [street_full, neighborhood, city] if p]

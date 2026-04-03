@@ -15,6 +15,7 @@ scheduler = AsyncIOScheduler(timezone="UTC")
 # Module-level health state — lost on process restart (per D-02)
 _health: dict[str, Optional[dict]] = {
     "yad2": None,
+    "madlan": None,
 }
 
 
@@ -52,6 +53,40 @@ async def run_yad2_scrape_job() -> None:
     }
     logger.info(
         "Yad2 scrape job completed: found=%d inserted=%d success=%s",
+        result.listings_found,
+        result.listings_inserted,
+        result.success,
+    )
+
+
+async def run_madlan_scrape_job() -> None:
+    """APScheduler job: run Madlan scraper → geocoding pass → dedup pass."""
+    from app.database import async_session_factory
+    from app.geocoding import run_dedup_pass, run_geocoding_pass
+    from app.scrapers.madlan import run_madlan_scraper  # deferred import (Phase 3 pattern)
+
+    started_at = datetime.now(timezone.utc)
+    logger.info("Madlan scrape job started")
+    try:
+        async with async_session_factory() as session:
+            result: ScraperResult = await run_madlan_scraper(session)
+            await run_geocoding_pass(session)
+            await run_dedup_pass(session)
+    except Exception as exc:
+        logger.exception("Madlan scrape job failed: %s", exc)
+        result = ScraperResult(source="madlan", success=False, errors=[str(exc)])
+
+    _health["madlan"] = {
+        "last_run": started_at.isoformat(),
+        "listings_found": result.listings_found,
+        "listings_inserted": result.listings_inserted,
+        "listings_rejected": result.listings_rejected,
+        "listings_flagged": result.listings_flagged,
+        "success": result.success,
+        "errors": result.errors,
+    }
+    logger.info(
+        "Madlan scrape job completed: found=%d inserted=%d success=%s",
         result.listings_found,
         result.listings_inserted,
         result.success,

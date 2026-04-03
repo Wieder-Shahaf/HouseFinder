@@ -9,7 +9,7 @@ from app.config import settings
 from app.database import engine, Base
 from app.models import listing  # noqa: F401 — registers model with Base
 from app.routers.listings import router
-from app.scheduler import scheduler, run_yad2_scrape_job, get_health_state
+from app.scheduler import scheduler, run_yad2_scrape_job, run_madlan_scrape_job, get_health_state
 
 
 @asynccontextmanager
@@ -28,6 +28,16 @@ async def lifespan(app: FastAPI):
         coalesce=True,         # Missed fires collapse to one
         misfire_grace_time=300,
         next_run_time=datetime.now(timezone.utc),  # D-01: fire immediately on startup
+    )
+    scheduler.add_job(
+        run_madlan_scrape_job,
+        trigger="interval",
+        hours=settings.scrape_interval_hours,  # same interval as Yad2 (D-04)
+        id="madlan_scrape",
+        max_instances=1,       # no duplicate concurrent runs
+        coalesce=True,         # missed fires collapse to one
+        misfire_grace_time=300,
+        next_run_time=datetime.now(timezone.utc),  # fire immediately on startup
     )
     scheduler.start()
     yield
