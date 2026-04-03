@@ -20,7 +20,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Map Web UI** - React-Leaflet map, RTL layout, listing cards, seen/favorites, filters (completed 2026-04-02)
 - [x] **Phase 5: Geocoding + Dedup + Neighborhoods** - Nominatim geocoding, cross-source dedup, neighborhood tagging (completed 2026-04-02)
 - [x] **Phase 6: Madlan Scraper** - Second structured source via Playwright + stealth (completed 2026-04-03)
-- [ ] **Phase 7: Notifications** - WhatsApp (Twilio) and Web Push on new listings
+- [ ] **Phase 7: Notifications** - Web Push notifications on new listings (WhatsApp stub deferred)
 - [ ] **Phase 8: Facebook Scrapers** - Groups and Marketplace with session management
 
 ## Phase Details
@@ -119,15 +119,17 @@ Plans:
 **Research flag**: Madlan's API/GraphQL shape is low-confidence and must be discovered via network inspection at build time.
 
 ### Phase 7: Notifications
-**Goal**: The user receives a WhatsApp message (and Web Push fallback) after each scraper run that finds new matching listings
+**Goal**: The user receives a Web Push notification after each scraper run that finds new listings, with a WhatsApp stub ready for future activation
 **Depends on**: Phase 6
 **Requirements**: NOTF-01, NOTF-02, NOTF-03, NOTF-04
 **Success Criteria** (what must be TRUE):
-  1. After a scraper run finds new listings, a WhatsApp message arrives on the user's phone showing the count, neighborhood, price range, and a direct link to the app
+  1. After a scraper run finds new listings, a Web Push notification arrives on the user's phone showing the count and a direct link to the app
   2. At most one notification batch is sent per scraper run — individual listing count does not affect notification frequency
-  3. A Web Push notification fires as fallback when WhatsApp is unavailable, with the same content summary
-**Plans**: TBD
-**Research flag**: Verify current Twilio WhatsApp template approval requirements and sandbox-to-production migration steps before implementation.
+  3. A WhatsApp send_whatsapp() stub exists for future activation after Meta template approval
+**Plans**: 2 plans
+Plans:
+- [ ] 07-01-PLAN.md — Backend: Alembic migration + notifier module + push router + scheduler wiring + tests (NOTF-01, NOTF-02, NOTF-03, NOTF-04)
+- [ ] 07-02-PLAN.md — Frontend: service worker + manifest + push subscription hook + App wiring (NOTF-03)
 
 ### Phase 8: Facebook Scrapers
 **Goal**: Facebook Groups and Marketplace listings flow into the pipeline as an isolated, best-effort source — with session health monitoring that alerts the user when re-authentication is needed
@@ -154,5 +156,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 4. Map Web UI | 4/4 | Complete   | 2026-04-02 |
 | 5. Geocoding + Dedup + Neighborhoods | 3/3 | Complete   | 2026-04-02 |
 | 6. Madlan Scraper | 1/1 | Complete   | 2026-04-03 |
-| 7. Notifications | 0/TBD | Not started | - |
+| 7. Notifications | 0/2 | Planned | - |
 | 8. Facebook Scrapers | 0/TBD | Not started | - |
