@@ -6,8 +6,6 @@ self.addEventListener('push', event => {
   const title = data.title || 'ApartmentFinder';
   const options = {
     body: data.body || '',
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
     dir: 'rtl',
     lang: 'he',
     data: { url: data.url || '/' },

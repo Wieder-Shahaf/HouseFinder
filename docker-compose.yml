@@ -2,6 +2,8 @@ services:
   backend:
     build:
       context: ./backend
+    ports:
+      - "8000:8000"
     environment:
       - DATABASE_URL=sqlite+aiosqlite:////data/listings.db
     env_file:
@@ -14,6 +16,8 @@ services:
   frontend:
     build:
       context: ./frontend
+    ports:
+      - "5173:80"
     networks:
       - app_network
 
