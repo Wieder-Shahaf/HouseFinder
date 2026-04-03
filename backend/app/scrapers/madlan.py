@@ -143,12 +143,15 @@ async def fetch_madlan_browser(url: str) -> list[dict]:
         async def handle_response(response):
             resp_url = response.url
             content_type = response.headers.get("content-type", "")
+            is_json = "json" in content_type
+            # Log all JSON responses so we can discover the real API endpoint
+            if is_json and response.status == 200:
+                logger.info(f"[madlan] JSON response: {resp_url[:120]}")
             # Capture api2 bulletines/listings responses (JSON only)
             is_api = any(
                 x in resp_url
-                for x in ["api2", "bulletines", "getBulletines", "listings", "rent"]
+                for x in ["api2", "bulletines", "getBulletines", "listings", "rent", "for-rent", "search", "properties"]
             )
-            is_json = "json" in content_type
             if is_api and is_json and response.status == 200:
                 try:
                     body = await response.body()
@@ -161,6 +164,8 @@ async def fetch_madlan_browser(url: str) -> list[dict]:
                             )
                             captured_api_listings.extend(listings)
                             api_response_received.set()
+                        else:
+                            logger.info(f"[madlan] API URL matched but 0 listings extracted from {resp_url[:80]}")
                 except Exception as e:
                     logger.debug(f"[madlan] Error parsing response from {resp_url}: {e}")
 
