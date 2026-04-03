@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     # מרכז העיר and נווה שאנן IDs not captured — use post-scrape address.neighborhood.text filter
     yad2_neighborhood_id_carmel: int = 609
 
+    # Madlan scraper settings (Phase 6)
+    madlan_base_url: str = "https://www.madlan.co.il/rent/haifa"
+
     # Scheduler settings (Phase 3) — SCHED-01
     scrape_interval_hours: int = 2
 
