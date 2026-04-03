@@ -126,6 +126,7 @@ Recent decisions affecting current work:
 |---|-------------|------|--------|-----------|
 | 260402-uad | Integrate Bright Data Web Unlocker proxy into Yad2 scraper for CAPTCHA bypass | 2026-04-02 | ff5a1f5 | [260402-uad-integrate-bright-data-web-unlocker-proxy](./quick/260402-uad-integrate-bright-data-web-unlocker-proxy/) |
 | 260402-v7j | Increase Yad2 Playwright scraper listing yield via scroll-to-load loop | 2026-04-02 | 00c47a2 | [260402-v7j-increase-yad2-playwright-scraper-listing](./quick/260402-v7j-increase-yad2-playwright-scraper-listing/) |
+| 260403-rzb | Generate VAPID key pair and configure .env for push notifications | 2026-04-03 | 601d294 | [260403-rzb-generate-vapid-keys-and-configure-env-th](./quick/260403-rzb-generate-vapid-keys-and-configure-env-th/) |
 
 ### Blockers/Concerns
 
