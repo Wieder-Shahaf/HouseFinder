@@ -205,13 +205,23 @@ async def fetch_madlan_browser(url: str) -> list[dict]:
     except Exception as e:
         logger.warning(f"[madlan] DEBUG: could not write debug HTML: {e}")
 
-    # Bot detection check — PerimeterX captcha indicators
-    bot_keywords = ["px-captcha", "PXo4wPDYYd", "perimeterx", "captcha", "cloudflare", "access denied"]
-    if any(kw.lower() in content.lower() for kw in bot_keywords):
+    # Bot detection check — only bail on actual CAPTCHA challenge pages.
+    # PXo4wPDYYd / perimeterx scripts appear on every Madlan page for real users too
+    # (monitoring, not blocking). A real block page is short (<50KB) AND has challenge UI.
+    hard_block_keywords = ["px-captcha", "challenge-form", "cf-challenge", "access denied"]
+    is_short_page = len(content) < 50_000
+    is_hard_block = any(kw.lower() in content.lower() for kw in hard_block_keywords)
+    if is_short_page and is_hard_block:
         logger.warning(
-            "[madlan] Bot-detection page detected. "
-            "Enable Bright Data proxy (BRIGHT_DATA_HOST/USER/PASS) for CAPTCHA bypass. "
+            "[madlan] Bot-detection CAPTCHA page detected (short page + challenge UI). "
             "Inspect /tmp/madlan_debug.html for details."
+        )
+        return []
+    if is_short_page and len(content) < 10_000:
+        logger.warning(
+            "[madlan] Page suspiciously short (%d bytes) — possible block. "
+            "Inspect /tmp/madlan_debug.html for details.",
+            len(content),
         )
         return []
 
