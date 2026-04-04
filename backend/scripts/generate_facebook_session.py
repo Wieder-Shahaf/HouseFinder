@@ -1,24 +1,22 @@
 #!/usr/bin/env python3
-"""One-time manual login script to generate a Facebook session file.
+"""One-time script to generate a Facebook session file via automated login.
 
 Usage:
-    python scripts/generate_facebook_session.py [output_path]
+    FB_EMAIL=you@example.com FB_PASSWORD=yourpass python scripts/generate_facebook_session.py [output_path]
 
 Default output: /data/facebook_session.json
 
-Opens a visible Chromium browser window. The user must:
-1. Log in to Facebook manually
-2. Press Enter in the terminal when done
-
-The script saves Playwright storage_state (cookies + localStorage) to the output path.
+Logs in to Facebook using credentials from environment variables, waits for
+the home feed to confirm success, then saves Playwright storage_state
+(cookies + localStorage) to the output path.
 Both facebook_groups.py and facebook_marketplace.py load this file at runtime.
 """
 import asyncio
+import os
 import sys
 from pathlib import Path
 
 from playwright.async_api import async_playwright
-
 
 DEFAULT_OUTPUT = "/data/facebook_session.json"
 
@@ -28,30 +26,58 @@ async def main():
     output = Path(output_path)
     output.parent.mkdir(parents=True, exist_ok=True)
 
-    print(f"Session will be saved to: {output_path}")
-    print()
+    email = os.environ.get("FB_EMAIL", "").strip()
+    password = os.environ.get("FB_PASSWORD", "").strip()
+    if not email or not password:
+        print("ERROR: FB_EMAIL and FB_PASSWORD environment variables must be set.")
+        sys.exit(1)
+
+    print(f"Logging in to Facebook as {email} ...")
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=False)
         context = await browser.new_context(
             locale="he-IL",
             viewport={"width": 1280, "height": 800},
+            ignore_https_errors=True,
         )
         page = await context.new_page()
-        await page.goto("https://www.facebook.com/login/")
+        await page.goto("https://www.facebook.com/login/", wait_until="domcontentloaded")
 
-        print("=" * 60)
-        print("A browser window has opened.")
-        print("Log in to your Facebook account manually.")
-        print("When you see your Facebook home feed, come back here")
-        print("and press Enter to save the session.")
-        print("=" * 60)
+        await page.fill("#email", email)
+        await page.fill("#pass", password)
+        await page.click("[name='login']")
 
-        input("\nPress Enter when logged in... ")
+        # Wait up to 30s for redirect away from /login — indicates success or 2FA
+        try:
+            await page.wait_for_url(
+                lambda url: "/login" not in url and "checkpoint" not in url,
+                timeout=30_000,
+            )
+            print("Login successful — saving session ...")
+        except Exception:
+            current = page.url
+            if "checkpoint" in current or "two_step" in current:
+                print(f"2FA or checkpoint detected at: {current}")
+                print("Complete the verification in the browser, then the script will continue automatically.")
+                # Wait up to 2 minutes for manual 2FA completion
+                try:
+                    await page.wait_for_url(
+                        lambda url: "/login" not in url and "checkpoint" not in url and "two_step" not in url,
+                        timeout=120_000,
+                    )
+                    print("Verification complete — saving session ...")
+                except Exception:
+                    print(f"Timed out waiting for verification. Current URL: {page.url}")
+                    await browser.close()
+                    sys.exit(1)
+            else:
+                print(f"Login may have failed. Current URL: {current}")
+                await browser.close()
+                sys.exit(1)
 
         await context.storage_state(path=str(output))
-        print(f"\nSession saved to {output_path}")
-        print("Both Facebook scrapers will use this session file.")
+        print(f"Session saved to {output_path}")
 
         await browser.close()
 
