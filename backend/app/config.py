@@ -29,6 +29,9 @@ class Settings(BaseSettings):
 
     # Madlan scraper settings (Phase 6)
     madlan_base_url: str = "https://www.madlan.co.il/rent/haifa"
+    # Max pages to fetch from /api3 GraphQL (50 results/page; ~4-8 Haifa results/page)
+    # 10 pages = 500 Israel-wide results = ~40-80 Haifa results covering 48h of listings
+    madlan_graphql_max_pages: int = 10
 
     # Scheduler settings (Phase 3) — SCHED-01
     scrape_interval_hours: int = 2

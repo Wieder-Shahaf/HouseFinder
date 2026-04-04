@@ -1,4 +1,4 @@
-"""Madlan scraper: Playwright+stealth browser automation (Playwright-first, per D-01).
+"""Madlan scraper: direct GraphQL httpx approach with Playwright fallback.
 
 Fetches Haifa rental listings from Madlan filtered to target neighborhoods
 (כרמל, מרכז העיר, נווה שאנן) and price <= settings.yad2_price_max.
@@ -8,64 +8,68 @@ Usage:
     result = await run_madlan_scraper(db)
 
 =============================================================================
-DevTools Discovery Findings (2026-04-03)
+API Discovery Findings (2026-04-04) — Updated
 =============================================================================
 
-Method: Playwright headless browser + network interception + httpx probing
-Target: https://www.madlan.co.il/rent/haifa
+Method: Direct GraphQL introspection + live API probing via httpx
+Target: https://www.madlan.co.il/api3 (GraphQL endpoint — confirmed live)
 
-1. BOT PROTECTION:
-   Madlan uses PerimeterX + Cloudflare WAF.
-   - All requests from datacenter/CI IPs receive 403 + captcha challenge page.
-   - The captcha page contains: <script src="/o4wPDYYd/captcha/PXo4wPDYYd/captcha.js">
-   - Detection keywords to check: "px-captcha", "PXo4wPDYYd", "perimeterx", "captcha"
-   - WORKAROUND: Must run from residential IP OR use Bright Data Web Unlocker proxy.
-   - playwright-stealth + proxy + persistent profile is the correct approach.
+1. GRAPHQL ENDPOINT (confirmed):
+   POST https://www.madlan.co.il/api3
+   Query: searchBulletinWithUserPreferences
+   No auth token required for public listing search.
 
-2. LISTING URL PATTERN (confirmed from sitemap):
-   Individual listing: https://www.madlan.co.il/listings/{id}
-   where {id} is a short alphanumeric slug, e.g. "EaW4wX1L38K", "lOrHhKgErxG"
-   Sitemap URL: https://www.madlan.co.il/sitemap/listings__index.xml
+2. GEOGRAPHIC FILTERING (discovery result):
+   - userPreferences.location PredicateInput: ALL field names rejected by the API.
+     Tried: docId, city, cityDocId, location, geo, locationDocId, and 50+ variants.
+     Error: "Field X is not supported / not allowed in location section"
+     Exception: 'id' is globally valid but also not allowed in location section.
+   - tileRanges with Web Mercator tile coordinates (any zoom 7-19): returns 0 or all-Israel.
+     Madlan's tileRanges system is NOT standard slippy map tiles.
+   - WORKING APPROACH: Use deal_type predicate only, then POST-FILTER by cityDocId in Python.
+     Haifa cityDocId: "חיפה-ישראל" (from autocomplete query)
 
-3. API ENDPOINT:
-   robots.txt discloses: /api2/ and /getBulletines
-   The /api2/ endpoint path appears to be /api2/bulletines (historical usage pattern)
-   This endpoint requires a session cookie ("a1" token) obtained via browser navigation.
-   Attempting /api2/bulletines directly returns "sorry a1" (missing session auth).
+3. VALID PREDICATE FIELDS (confirmed in "attributes" section):
+   - deal_type: IN ["unitRent", "buildingRent"] — filters for rentals
+   - price: RANGE (numeric array)
+   - beds: RANGE (numeric array) — "rooms" in Israeli convention (float)
+   - baths: RANGE (numeric array)
+   - floor: RANGE (numeric array)
+   - property_type: IN [...] (PropertyType enum)
+   - building_type: IN [...] (string)
+   - seller_type: IN [...] (SellerType enum)
+   - general_condition: IN [...] (GeneralCondition enum)
 
-4. DATA EXTRACTION STRATEGY:
-   Primary:   XHR interception via page.on("response") to capture api2 JSON responses.
-              After browser navigation, api2 calls carry session cookies automatically.
-              Look for responses from api2/* or containing "bulletines" / "listings".
-   Secondary: __NEXT_DATA__ extraction from page HTML.
-              Madlan is a Next.js/React SPA - listing data may be embedded in
-              props.pageProps after server-side rendering.
-   Tertiary:  DOM parsing via BeautifulSoup as last resort.
+4. FIELD MAPPING (confirmed from live API response):
+   id               → source_id (short alphanumeric slug, e.g. "7cPBU3UBrDO")
+   price            → price (integer NIS/month)
+   beds             → rooms (float, Israeli "rooms" count, e.g. 3.5)
+   area             → size_sqm (float/integer, square meters)
+   address          → address string (e.g. "האסיף 19, חיפה")
+   structuredAddress.streetName + streetNumber → street
+   addressDetails.city        → city name
+   addressDetails.cityDocId   → city filter key ("חיפה-ישראל" for Haifa)
+   addressDetails.neighbourhood → neighborhood name
+   addressDetails.neighbourhoodDocId → neighborhood filter key
+   locationPoint.lat / .lng   → lat/lng (float)
+   firstTimeSeen              → post_date (ISO8601)
+   lastUpdated                → fallback for post_date
+   description                → title/description
+   dealType                   → deal type enum (unitRent, unitBuy, etc.)
+   url                        → empty string in API response (construct from id)
+   Listing URL pattern: https://www.madlan.co.il/listings/{id}
 
-5. FIELD MAPPING (inferred from Madlan's known data structure and sitemap):
-   The Madlan listing object typically contains:
-     id / bulletinId   → source_id (short alphanumeric slug, stable per sitemap)
-     price             → price (integer, NIS/month)
-     rooms             → rooms (float, e.g. 3.0 or 3.5)
-     squareMeter       → size_sqm (integer, square meters)
-     address.city.text     → city
-     address.neighborhood.text → neighborhood
-     address.street.text   → street
-     address.houseNum      → house number
-     coordinates.lat / lon → lat / lng
-     contactName       → contact_info
-     publishedAt / updatedAt → post_date
-     description / title   → title
-   URL: https://www.madlan.co.il/listings/{id}
+5. PAGINATION:
+   limit/offset pagination. limit=50 recommended.
+   Sort by DATE DESC to get newest listings first.
+   Stop pagination when firstTimeSeen < scrape_interval_hours ago.
+   Approximately 4-8 Haifa rentals per page of 50 all-Israel rentals.
 
-6. PAGINATION:
-   Madlan uses infinite scroll (similar to Yad2).
-   Scroll-to-load pattern: scroll down, wait for new items, repeat until stable.
-   URL parameter `page` may also exist for pagination.
-
-7. HAIFA FILTER URL:
-   https://www.madlan.co.il/rent/haifa
-   Additional price param: ?maxPrice=4500 (to be verified at runtime)
+6. BOT PROTECTION:
+   Madlan uses PerimeterX + Cloudflare WAF on page rendering (403 from datacenter).
+   The /api3 GraphQL endpoint does NOT require browser rendering or cookies —
+   direct httpx POST works from datacenter IPs (confirmed in testing).
+   Bright Data proxy is still useful if /api3 starts blocking datacenter IPs.
 =============================================================================
 """
 
@@ -75,9 +79,10 @@ import json
 import logging
 import os
 import re
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from typing import Any, Optional
 
+import httpx
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
@@ -89,9 +94,209 @@ from app.scrapers.proxy import get_proxy_launch_args, is_proxy_enabled
 
 logger = logging.getLogger(__name__)
 
+# Madlan GraphQL endpoint (confirmed via introspection, 2026-04-04)
+MADLAN_GRAPHQL_URL = "https://www.madlan.co.il/api3"
+
+# Haifa city docId (from autocomplete query)
+HAIFA_CITY_DOC_ID = "חיפה-ישראל"
+
+# GraphQL query for rental bulletins
+SEARCH_BULLETINS_QUERY = """
+query SearchBulletins($limit: Int!, $offset: Int!) {
+  searchBulletinWithUserPreferences(searchQuery: {
+    limit: $limit
+    offset: $offset
+    sortType: DATE
+    sortOrder: DESC
+    userPreferences: {
+      attributes: {
+        operator: IN
+        field: "deal_type"
+        intent: MUST
+        value: ["unitRent", "buildingRent"]
+      }
+    }
+  }) {
+    total
+    bulletins {
+      id
+      price
+      beds
+      area
+      floor
+      dealType
+      address
+      description
+      firstTimeSeen
+      lastUpdated
+      addressDetails {
+        city
+        cityDocId
+        neighbourhood
+        neighbourhoodDocId
+      }
+      structuredAddress {
+        city
+        streetName
+        streetNumber
+      }
+      locationPoint {
+        lat
+        lng
+      }
+    }
+  }
+}
+"""
+
 
 # ---------------------------------------------------------------------------
-# Playwright browser fetch
+# Direct GraphQL fetch (primary strategy)
+# ---------------------------------------------------------------------------
+
+
+async def fetch_madlan_graphql(
+    max_pages: int = 10,
+    page_size: int = 50,
+    cutoff_hours: int | None = None,
+) -> list[dict]:
+    """Fetch Madlan rental listings directly via the /api3 GraphQL endpoint.
+
+    Strategy:
+      1. POST searchBulletinWithUserPreferences with deal_type=unitRent filter.
+      2. Paginate sorted by DATE DESC until firstTimeSeen < cutoff_hours ago.
+      3. Filter results to Haifa (addressDetails.cityDocId == HAIFA_CITY_DOC_ID).
+
+    No browser or cookies required — /api3 accepts direct httpx requests.
+    Falls back gracefully if the endpoint returns non-200 or errors.
+
+    Args:
+        max_pages: Maximum pages to fetch (safety cap).
+        page_size: Results per page (50 is optimal).
+        cutoff_hours: Stop pagination when listings are older than this many hours.
+                      Defaults to settings.scrape_interval_hours * 2 for safety margin.
+
+    Returns:
+        List of raw bulletin dicts for Haifa rentals only.
+    """
+    if cutoff_hours is None:
+        cutoff_hours = settings.scrape_interval_hours * 2
+
+    cutoff_dt = datetime.now(timezone.utc) - timedelta(hours=cutoff_hours)
+    logger.info(
+        f"[madlan] GraphQL fetch: cutoff={cutoff_dt.isoformat()}, "
+        f"max_pages={max_pages}, page_size={page_size}"
+    )
+
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "User-Agent": (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+        ),
+        "Origin": "https://www.madlan.co.il",
+        "Referer": "https://www.madlan.co.il/rent/haifa",
+        "Accept-Language": "he-IL,he;q=0.9,en;q=0.8",
+    }
+
+    haifa_listings: list[dict] = []
+
+    async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+        for page in range(max_pages):
+            offset = page * page_size
+            payload = {
+                "query": SEARCH_BULLETINS_QUERY,
+                "variables": {"limit": page_size, "offset": offset},
+            }
+
+            try:
+                resp = await client.post(MADLAN_GRAPHQL_URL, json=payload, headers=headers)
+            except Exception as exc:
+                logger.warning(f"[madlan] GraphQL request failed (page {page + 1}): {exc}")
+                break
+
+            if resp.status_code != 200:
+                logger.warning(
+                    f"[madlan] GraphQL returned HTTP {resp.status_code} (page {page + 1})"
+                )
+                break
+
+            try:
+                data = resp.json()
+            except Exception as exc:
+                logger.warning(f"[madlan] GraphQL JSON parse failed (page {page + 1}): {exc}")
+                break
+
+            if "errors" in data:
+                logger.warning(
+                    f"[madlan] GraphQL errors (page {page + 1}): "
+                    f"{data['errors'][0].get('message', '')[:120]}"
+                )
+                break
+
+            result = (data.get("data") or {}).get("searchBulletinWithUserPreferences") or {}
+            bulletins = result.get("bulletins") or []
+            total = result.get("total", 0)
+
+            if not bulletins:
+                logger.info(f"[madlan] GraphQL: no bulletins on page {page + 1}, stopping")
+                break
+
+            logger.info(
+                f"[madlan] GraphQL page {page + 1}: {len(bulletins)} bulletins "
+                f"(total across Israel: {total})"
+            )
+
+            # Filter to Haifa and apply cutoff
+            # NOTE: cutoff is checked on ALL bulletins (not just Haifa) to drive
+            # pagination termination — bulletins are sorted DATE DESC so once we
+            # see one older than cutoff_dt the rest will be older too.
+            reached_cutoff = False
+            page_oldest: datetime | None = None
+            for bulletin in bulletins:
+                # Track oldest timestamp on this page for cutoff decision
+                first_seen_raw = bulletin.get("firstTimeSeen") or bulletin.get("lastUpdated")
+                if first_seen_raw:
+                    try:
+                        first_seen = datetime.fromisoformat(
+                            first_seen_raw.replace("Z", "+00:00")
+                        )
+                        if page_oldest is None or first_seen < page_oldest:
+                            page_oldest = first_seen
+                    except Exception:
+                        pass
+
+                # City filter: Haifa only
+                addr_details = bulletin.get("addressDetails") or {}
+                if addr_details.get("cityDocId") != HAIFA_CITY_DOC_ID:
+                    continue
+
+                haifa_listings.append(bulletin)
+
+            # Stop paginating if the oldest listing on this page is beyond cutoff
+            if page_oldest is not None and page_oldest < cutoff_dt:
+                reached_cutoff = True
+
+            if reached_cutoff:
+                logger.info(
+                    f"[madlan] GraphQL: reached cutoff ({cutoff_hours}h) at page {page + 1}"
+                )
+                break
+
+            # If we got fewer results than page_size, we've reached the end
+            if len(bulletins) < page_size:
+                logger.info(f"[madlan] GraphQL: final page reached at page {page + 1}")
+                break
+
+    logger.info(
+        f"[madlan] GraphQL fetch complete: {len(haifa_listings)} Haifa rental listings"
+    )
+    return haifa_listings
+
+
+# ---------------------------------------------------------------------------
+# Playwright browser fetch (fallback)
 # ---------------------------------------------------------------------------
 
 
@@ -395,30 +600,41 @@ def _extract_from_dom(html: str) -> list[dict]:
 def is_in_target_neighborhood(item: dict) -> bool:
     """Check if a listing is in one of the target Haifa neighborhoods.
 
+    Supports both the GraphQL API format (addressDetails.neighbourhood) and
+    the legacy browser-scraped format (nested address.neighborhood.text).
+
     Uses substring matching against settings.yad2_neighborhoods.
-    Checks neighborhood, street, city, and description fields.
     Same neighborhoods list as Yad2 (כרמל, מרכז העיר, נווה שאנן).
     """
-    # Madlan field names for address (nested structure)
+    # GraphQL API format (primary — confirmed from live /api3 responses)
+    addr_details = item.get("addressDetails") or {}
+    if isinstance(addr_details, dict):
+        neighbourhood = addr_details.get("neighbourhood", "") or ""
+        neighbourhood_doc_id = addr_details.get("neighbourhoodDocId", "") or ""
+    else:
+        neighbourhood = ""
+        neighbourhood_doc_id = ""
+
+    # Legacy browser-scraped format (nested address object)
     address = item.get("address") or {}
     if isinstance(address, dict):
-        neighborhood = (address.get("neighborhood") or {}).get("text", "") or ""
-        street = (address.get("street") or {}).get("text", "") or ""
-        city = (address.get("city") or {}).get("text", "") or ""
+        legacy_neighborhood = (address.get("neighborhood") or {}).get("text", "") or ""
+        legacy_street = (address.get("street") or {}).get("text", "") or ""
     else:
-        neighborhood = ""
-        street = ""
-        city = ""
+        legacy_neighborhood = ""
+        legacy_street = ""
 
-    # Also check flat fields (if already flattened)
-    neighborhood = neighborhood or item.get("neighborhood", "") or ""
-    street = street or item.get("street", "") or ""
-    city = city or item.get("city", "") or ""
+    # Flat fields (fallback)
+    flat_neighborhood = item.get("neighborhood", "") or ""
+    flat_street = item.get("street", "") or ""
 
     # Also check description/title for neighborhood mentions
     description = item.get("description", "") or item.get("title", "") or ""
 
-    location_text = f"{neighborhood} {street} {city} {description}"
+    location_text = (
+        f"{neighbourhood} {neighbourhood_doc_id} {legacy_neighborhood} "
+        f"{legacy_street} {flat_neighborhood} {flat_street} {description}"
+    )
     return any(n in location_text for n in settings.yad2_neighborhoods)
 
 
@@ -428,9 +644,11 @@ def is_in_target_neighborhood(item: dict) -> bool:
 
 
 def _parse_int_price(raw: Any) -> int | None:
-    """Parse price from Madlan raw value — handles '3,500 ₪', 3500, '3500/month', etc."""
+    """Parse price from Madlan raw value — handles integers, '3,500 ₪', etc."""
     if raw is None:
         return None
+    if isinstance(raw, (int, float)):
+        return int(raw)
     text = str(raw)
     digits = re.sub(r"[^\d]", "", text)
     if not digits:
@@ -444,8 +662,17 @@ def _parse_int_price(raw: Any) -> int | None:
 def _parse_float_rooms(item: dict) -> float | None:
     """Extract rooms count from Madlan item.
 
-    Madlan uses 'rooms' key directly (float: 3.0, 3.5, etc.).
+    GraphQL API uses 'beds' (float, Israeli "rooms" convention, e.g. 3.5).
+    Legacy browser format uses 'rooms' key.
     """
+    # GraphQL API field (confirmed from /api3 live responses)
+    raw = item.get("beds")
+    if raw is not None:
+        try:
+            return float(raw)
+        except (ValueError, TypeError):
+            pass
+    # Legacy browser-scraped field
     raw = item.get("rooms")
     if raw is not None:
         try:
@@ -497,32 +724,37 @@ def _parse_post_date(raw: Any) -> datetime | None:
 def parse_listing(item: dict) -> dict | None:
     """Extract and normalise fields from a single Madlan listing item.
 
-    Field mapping (from DevTools discovery + known Madlan data structure):
-      id / bulletinId       → source_id (short alphanumeric slug, stable)
-      price                 → price (integer NIS/month)
-      rooms                 → rooms (float)
-      squareMeter           → size_sqm (integer)
-      address.city.text     → city component
-      address.neighborhood.text → neighborhood component
-      address.street.text   → street component
-      address.houseNum      → house number
-      coordinates.lat/lng   → lat/lng (geocoded later by run_geocoding_pass)
-      contactName           → contact_info
-      publishedAt / updatedAt → post_date
-      description / title   → title
-      id                    → URL: https://www.madlan.co.il/listings/{id}
+    Supports two formats:
+    1. GraphQL /api3 format (primary — confirmed from live API, 2026-04-04):
+       id                          → source_id
+       price                       → price (integer NIS/month)
+       beds                        → rooms (float, Israeli "rooms" count)
+       area                        → size_sqm (float)
+       address                     → address string (e.g. "האסיף 19, חיפה")
+       structuredAddress.streetName + streetNumber → street components
+       addressDetails.city         → city name
+       addressDetails.neighbourhood → neighborhood name
+       locationPoint.lat / .lng    → lat/lng coordinates
+       firstTimeSeen / lastUpdated → post_date (ISO8601)
+       description                 → title
+
+    2. Legacy browser-scraped format (fallback):
+       id / bulletinId / listingId → source_id
+       rooms / squareMeter etc.    → as before
+
+    Listing URL: https://www.madlan.co.il/listings/{id} (confirmed from sitemap)
 
     Returns a dict ready for insertion into the Listing table, or None
     if the item is malformed (missing source_id).
     """
-    # source_id: stable per-listing ID (short alphanumeric slug)
+    # source_id: stable per-listing ID (short alphanumeric slug from GraphQL or legacy)
     source_id = str(
         item.get("id") or item.get("bulletinId") or item.get("listingId") or ""
     ).strip()
     if not source_id:
         return None
 
-    # Title: use description or title field
+    # Title: description field (GraphQL) or title/headline (legacy)
     title = (
         item.get("description") or item.get("title") or item.get("headline") or ""
     ).strip()
@@ -530,50 +762,81 @@ def parse_listing(item: dict) -> dict | None:
     # Price
     price = _parse_int_price(item.get("price"))
 
-    # Rooms
+    # Rooms: 'beds' in GraphQL API, 'rooms' in legacy format
     rooms = _parse_float_rooms(item)
 
-    # Size
+    # Size: 'area' in GraphQL API, 'squareMeter' in legacy format
     size_sqm = _parse_int_sqm(item)
 
-    # Address (handle nested address object from Madlan, with flat-field fallback)
-    address_obj = item.get("address") or {}
-    if isinstance(address_obj, dict):
-        neighborhood = (address_obj.get("neighborhood") or {}).get("text", "") or ""
-        street = (address_obj.get("street") or {}).get("text", "") or ""
-        city = (address_obj.get("city") or {}).get("text", "") or ""
-        house_num = str(address_obj.get("houseNum") or "").strip()
+    # Address: GraphQL provides structured address in multiple fields
+    # Primary: addressDetails (GraphQL)
+    addr_details = item.get("addressDetails") or {}
+    structured = item.get("structuredAddress") or {}
+
+    if isinstance(addr_details, dict) and addr_details.get("city"):
+        # GraphQL /api3 format
+        city = addr_details.get("city", "") or ""
+        neighborhood = addr_details.get("neighbourhood", "") or ""
+        street_name = structured.get("streetName", "") or "" if isinstance(structured, dict) else ""
+        street_num = structured.get("streetNumber", "") or "" if isinstance(structured, dict) else ""
+        street = f"{street_name} {street_num}".strip() if street_num else street_name
+        # Use the flat address string if available (most complete)
+        flat_address = item.get("address", "") or ""
+        address = flat_address or ", ".join(p for p in [street, neighborhood, city] if p) or None
     else:
-        neighborhood = ""
-        street = ""
-        city = ""
-        house_num = ""
+        # Legacy browser-scraped format (nested address object)
+        address_obj = item.get("address") or {}
+        if isinstance(address_obj, dict):
+            neighborhood = (address_obj.get("neighborhood") or {}).get("text", "") or ""
+            street = (address_obj.get("street") or {}).get("text", "") or ""
+            city = (address_obj.get("city") or {}).get("text", "") or ""
+            house_num = str(address_obj.get("houseNum") or "").strip()
+        else:
+            neighborhood = ""
+            street = ""
+            city = ""
+            house_num = ""
+            # address_obj is a string in browser DOM fallback
+            flat_address = str(address_obj) if address_obj else ""
 
-    # Flat-field fallback: if nested address yielded empty values, try direct item keys
-    neighborhood = neighborhood or item.get("neighborhood", "") or ""
-    street = street or item.get("street", "") or ""
-    city = city or item.get("city", "") or ""
+        # Flat-field fallback
+        neighborhood = neighborhood or item.get("neighborhood", "") or ""
+        street = street or item.get("street", "") or ""
+        city = city or item.get("city", "") or ""
+        if "house_num" in dir():
+            street_full = f"{street} {house_num}".strip() if house_num else street
+        else:
+            street_full = street
+        address_parts = [p for p in [street_full, neighborhood, city] if p]
+        address = ", ".join(address_parts) if address_parts else None
 
-    street_full = f"{street} {house_num}".strip() if house_num else street
-    address_parts = [p for p in [street_full, neighborhood, city] if p]
-    address = ", ".join(address_parts) if address_parts else None
-
-    # Contact info
+    # Contact info: not available in GraphQL /api3 public API (protected field)
     contact_info = (item.get("contactName") or item.get("contact_name") or "").strip() or None
 
-    # Post date
+    # Post date: 'firstTimeSeen' (GraphQL) or 'publishedAt'/'updatedAt' (legacy)
     post_date = _parse_post_date(
-        item.get("publishedAt") or item.get("updatedAt") or item.get("date")
+        item.get("firstTimeSeen")
+        or item.get("publishedAt")
+        or item.get("lastUpdated")
+        or item.get("updatedAt")
+        or item.get("date")
     )
 
-    # Coordinates (geocoded later if missing)
-    coords = item.get("coordinates") or item.get("coords") or {}
-    if isinstance(coords, dict):
-        lat = coords.get("lat") or coords.get("latitude")
-        lng = coords.get("lng") or coords.get("lon") or coords.get("longitude")
+    # Coordinates: 'locationPoint.lat/lng' (GraphQL) or 'coordinates.lat/lng' (legacy)
+    location_point = item.get("locationPoint") or {}
+    if isinstance(location_point, dict) and location_point.get("lat") is not None:
+        # GraphQL /api3 format
+        lat = location_point.get("lat")
+        lng = location_point.get("lng")
     else:
-        lat = item.get("lat")
-        lng = item.get("lng") or item.get("lon")
+        # Legacy browser format
+        coords = item.get("coordinates") or item.get("coords") or {}
+        if isinstance(coords, dict):
+            lat = coords.get("lat") or coords.get("latitude")
+            lng = coords.get("lng") or coords.get("lon") or coords.get("longitude")
+        else:
+            lat = item.get("lat")
+            lng = item.get("lng") or item.get("lon")
     try:
         lat = float(lat) if lat is not None else None
         lng = float(lng) if lng is not None else None
@@ -634,29 +897,42 @@ async def run_madlan_scraper(db: AsyncSession) -> ScraperResult:
     """Fetch Madlan listings, verify with LLM, merge fields, and upsert to DB.
 
     Pipeline:
-      1. Fetch listings via Playwright+stealth (Playwright-first, per D-01).
-         Three extraction strategies: XHR interception → __NEXT_DATA__ → DOM.
-      2. Neighborhood filter — discard listings outside target areas.
-      3. Parse and price-filter all feed items.
-      4. LLM batch verification — reject non-rentals, flag low-confidence.
-      5. Merge LLM-extracted fields with scraper fields (scraper wins on non-null).
-      6. DB upsert — on_conflict_do_nothing for deduplication.
+      1. Fetch listings via direct GraphQL httpx (Strategy A — primary).
+         Query: searchBulletinWithUserPreferences with deal_type=unitRent.
+         Filter by cityDocId='חיפה-ישראל' in Python (location predicate field names
+         are not publicly documented — see debug session madlan-api-predicate-fields).
+      2. Fallback to Playwright browser if GraphQL returns 0 results.
+      3. Neighborhood filter — discard listings outside target areas.
+      4. Parse and price-filter all feed items.
+      5. LLM batch verification — reject non-rentals, flag low-confidence.
+      6. Merge LLM-extracted fields with scraper fields (scraper wins on non-null).
+      7. DB upsert — on_conflict_do_nothing for deduplication.
 
     Returns ScraperResult with counts and any error messages.
     """
     result = ScraperResult(source="madlan")
 
     try:
-        # Build URL: Madlan Haifa rental page with price filter
-        # Keep https:// — Bright Data Web Unlocker handles SSL via MITM interception.
-        # ignore_https_errors=True is set on the browser context to accept the proxy cert.
-        url = settings.madlan_base_url
-        if is_proxy_enabled():
-            logger.info("[madlan] Proxy active — using https:// with ignore_https_errors")
+        # Step 1A: Fetch listings via direct GraphQL (primary strategy)
+        # Confirmed working: POST /api3 with deal_type predicate, filter Haifa in Python.
+        logger.info("[madlan] Attempting direct GraphQL fetch from /api3")
+        feed_items = await fetch_madlan_graphql(
+            max_pages=settings.madlan_graphql_max_pages,
+            page_size=50,
+            cutoff_hours=settings.scrape_interval_hours * 2,
+        )
+        logger.info(f"[madlan] GraphQL: {len(feed_items)} Haifa rental items fetched")
 
-        # Step 1: Fetch listings via Playwright
-        feed_items = await fetch_madlan_browser(url)
-        logger.info(f"[madlan] Fetched {len(feed_items)} raw items from Playwright")
+        # Step 1B: Playwright fallback if GraphQL returned nothing
+        if not feed_items:
+            logger.warning(
+                "[madlan] GraphQL returned 0 items — falling back to Playwright browser"
+            )
+            url = settings.madlan_base_url
+            if is_proxy_enabled():
+                logger.info("[madlan] Proxy active — using https:// with ignore_https_errors")
+            feed_items = await fetch_madlan_browser(url)
+            logger.info(f"[madlan] Playwright fallback: {len(feed_items)} raw items fetched")
 
         # Neighborhood filter (MADL-01): discard listings outside target areas
         before_filter = len(feed_items)
