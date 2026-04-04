@@ -112,6 +112,7 @@ async def _load_fb_context(p: Any, session_path: str) -> tuple[Any, Any]:
         locale="he-IL",
         viewport={"width": 1280, "height": 800},
         extra_http_headers={"Accept-Language": "he-IL,he;q=0.9"},
+        ignore_https_errors=True,
     )
     await Stealth().apply_stealth_async(context)
     return browser, context
