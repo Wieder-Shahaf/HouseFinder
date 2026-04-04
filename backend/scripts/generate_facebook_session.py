@@ -42,11 +42,18 @@ async def main():
             ignore_https_errors=True,
         )
         page = await context.new_page()
-        await page.goto("https://www.facebook.com/login/", wait_until="domcontentloaded")
+        await page.goto("https://www.facebook.com/login/", wait_until="networkidle", timeout=60_000)
+        await page.screenshot(path="/tmp/fb_login_page.png")
+        print(f"Page loaded: {page.url}")
 
-        await page.fill("#email", email)
-        await page.fill("#pass", password)
-        await page.click("[name='login']")
+        # Try multiple selectors — Facebook changes its DOM occasionally
+        email_sel = "input[name='email'], #email, input[type='email']"
+        pass_sel = "input[name='pass'], #pass, input[type='password']"
+
+        await page.wait_for_selector(email_sel, timeout=15_000)
+        await page.fill(email_sel, email)
+        await page.fill(pass_sel, password)
+        await page.click("button[name='login'], [data-testid='royal_login_button'], button[type='submit']")
 
         # Wait up to 30s for redirect away from /login — indicates success or 2FA
         try:
