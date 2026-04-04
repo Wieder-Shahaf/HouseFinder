@@ -45,28 +45,42 @@ async def main():
         await page.goto("https://www.facebook.com/login/", wait_until="networkidle", timeout=60_000)
         print(f"Page loaded: {page.url}")
 
-        # Dismiss cookie consent dialog if present (use JS — Hebrew text selector is unreliable)
+        # Dismiss cookie consent dialog — try JS across main frame + all iframes
+        dismissed = False
+        dismiss_js = """
+            () => {
+                const keywords = ['לאפשר', 'Allow all', 'Accept all', 'Accept'];
+                const buttons = Array.from(document.querySelectorAll('button, [role="button"]'));
+                const btn = buttons.find(b => keywords.some(k => b.textContent.includes(k)));
+                if (btn) { btn.click(); return true; }
+                return false;
+            }
+        """
         try:
-            dismissed = await page.evaluate("""
-                () => {
-                    const buttons = Array.from(document.querySelectorAll('button'));
-                    const btn = buttons.find(b =>
-                        b.textContent.includes('לאפשר') ||
-                        b.textContent.includes('Allow all') ||
-                        b.textContent.includes('Accept all') ||
-                        b.textContent.includes('Accept')
-                    );
-                    if (btn) { btn.click(); return true; }
-                    return false;
-                }
-            """)
-            if dismissed:
-                print("Cookie dialog dismissed via JS.")
-                await page.wait_for_timeout(1_500)
-            else:
-                print("No cookie dialog found.")
+            dismissed = await page.evaluate(dismiss_js)
+            if not dismissed:
+                for frame in page.frames:
+                    try:
+                        dismissed = await frame.evaluate(dismiss_js)
+                        if dismissed:
+                            break
+                    except Exception:
+                        continue
         except Exception as e:
-            print(f"Cookie dismiss error: {e}")
+            print(f"Cookie dismiss JS error: {e}")
+
+        if dismissed:
+            print("Cookie dialog dismissed.")
+            await page.wait_for_timeout(1_500)
+        else:
+            # Fallback: click the blue accept button by coordinates (bottom-left of dialog)
+            print("Trying coordinate click to dismiss cookie dialog ...")
+            try:
+                await page.mouse.click(465, 641)
+                await page.wait_for_timeout(1_500)
+                print("Coordinate click done.")
+            except Exception as e:
+                print(f"Coordinate click failed: {e}")
 
         await page.screenshot(path="/tmp/fb_login_page.png")
         print("Screenshot saved to /tmp/fb_login_page.png")
