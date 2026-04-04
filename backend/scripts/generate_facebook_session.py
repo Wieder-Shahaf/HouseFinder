@@ -40,9 +40,20 @@ async def main():
         await page.goto("https://www.facebook.com/login/", wait_until="domcontentloaded", timeout=60_000)
         print(f"Page loaded: {page.url}")
 
-        # Press Enter to dismiss cookie dialog (accept button is default-focused)
-        await page.keyboard.press("Enter")
-        await page.wait_for_timeout(1_000)
+        # Remove the cookie consent overlay from the DOM entirely
+        removed = await page.evaluate("""
+            () => {
+                // The modal overlay that intercepts all pointer events
+                const overlay = document.querySelector('.x1n2onr6.x1vjfegm');
+                if (overlay) { overlay.remove(); return 'overlay'; }
+                // Fallback: remove any element with role="dialog"
+                const dialog = document.querySelector('[role="dialog"]');
+                if (dialog) { dialog.remove(); return 'dialog'; }
+                return null;
+            }
+        """)
+        print(f"Overlay removed: {removed}")
+        await page.wait_for_timeout(500)
 
         await page.screenshot(path="/tmp/fb_login_page.png")
         print("Screenshot saved.")
