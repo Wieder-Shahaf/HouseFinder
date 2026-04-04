@@ -20,18 +20,18 @@
 
 ### Scraping — Facebook Groups
 
-- [ ] **FBGR-01**: Scraper monitors user-configured Facebook group list for rental posts
-- [ ] **FBGR-02**: Scraper uses saved authenticated Playwright session (manual login once)
-- [ ] **FBGR-03**: Session health is checked before each run; alert sent when session expires and re-auth is needed
-- [ ] **FBGR-04**: Scraper extracts: post text, poster name/link, post date, group name, post URL
-- [ ] **FBGR-05**: Facebook Groups failure is isolated — does not block other scrapers
+- [x] **FBGR-01**: Scraper monitors user-configured Facebook group list for rental posts
+- [x] **FBGR-02**: Scraper uses saved authenticated Playwright session (manual login once)
+- [x] **FBGR-03**: Session health is checked before each run; alert sent when session expires and re-auth is needed
+- [x] **FBGR-04**: Scraper extracts: post text, poster name/link, post date, group name, post URL
+- [x] **FBGR-05**: Facebook Groups failure is isolated — does not block other scrapers
 
 ### Scraping — Facebook Marketplace
 
-- [ ] **FBMP-01**: Scraper fetches rental listings in Haifa from Facebook Marketplace
-- [ ] **FBMP-02**: Scraper uses same authenticated session as Facebook Groups
-- [ ] **FBMP-03**: Scraper extracts: title, price, address or neighborhood, post date, listing URL
-- [ ] **FBMP-04**: Facebook Marketplace failure is isolated
+- [x] **FBMP-01**: Scraper fetches rental listings in Haifa from Facebook Marketplace
+- [x] **FBMP-02**: Scraper uses same authenticated session as Facebook Groups
+- [x] **FBMP-03**: Scraper extracts: title, price, address or neighborhood, post date, listing URL
+- [x] **FBMP-04**: Facebook Marketplace failure is isolated
 
 ### LLM Verification
 
@@ -156,15 +156,15 @@
 | NOTF-02 | Phase 7 | Complete |
 | NOTF-03 | Phase 7 | Complete |
 | NOTF-04 | Phase 7 | Complete |
-| FBGR-01 | Phase 8 | Pending |
-| FBGR-02 | Phase 8 | Pending |
-| FBGR-03 | Phase 8 | Pending |
-| FBGR-04 | Phase 8 | Pending |
-| FBGR-05 | Phase 8 | Pending |
-| FBMP-01 | Phase 8 | Pending |
-| FBMP-02 | Phase 8 | Pending |
-| FBMP-03 | Phase 8 | Pending |
-| FBMP-04 | Phase 8 | Pending |
+| FBGR-01 | Phase 8 | Complete |
+| FBGR-02 | Phase 8 | Complete |
+| FBGR-03 | Phase 8 | Complete |
+| FBGR-04 | Phase 8 | Complete |
+| FBGR-05 | Phase 8 | Complete |
+| FBMP-01 | Phase 8 | Complete |
+| FBMP-02 | Phase 8 | Complete |
+| FBMP-03 | Phase 8 | Complete |
+| FBMP-04 | Phase 8 | Complete |
 
 **Coverage:**
 - v1 requirements: 44 total
