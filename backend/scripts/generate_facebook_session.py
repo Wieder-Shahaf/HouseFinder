@@ -45,14 +45,28 @@ async def main():
         await page.goto("https://www.facebook.com/login/", wait_until="networkidle", timeout=60_000)
         print(f"Page loaded: {page.url}")
 
-        # Dismiss cookie consent dialog if present
+        # Dismiss cookie consent dialog if present (use JS — Hebrew text selector is unreliable)
         try:
-            accept_btn = page.locator("button:has-text('לאפשר')")
-            await accept_btn.first.click(timeout=5_000)
-            print("Cookie dialog dismissed.")
-            await page.wait_for_timeout(1_500)
+            dismissed = await page.evaluate("""
+                () => {
+                    const buttons = Array.from(document.querySelectorAll('button'));
+                    const btn = buttons.find(b =>
+                        b.textContent.includes('לאפשר') ||
+                        b.textContent.includes('Allow all') ||
+                        b.textContent.includes('Accept all') ||
+                        b.textContent.includes('Accept')
+                    );
+                    if (btn) { btn.click(); return true; }
+                    return false;
+                }
+            """)
+            if dismissed:
+                print("Cookie dialog dismissed via JS.")
+                await page.wait_for_timeout(1_500)
+            else:
+                print("No cookie dialog found.")
         except Exception as e:
-            print(f"No cookie dialog (or dismiss failed): {e}")
+            print(f"Cookie dismiss error: {e}")
 
         await page.screenshot(path="/tmp/fb_login_page.png")
         print("Screenshot saved to /tmp/fb_login_page.png")
