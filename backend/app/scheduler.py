@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, Union
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -13,9 +13,12 @@ logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler(timezone="UTC")
 
 # Module-level health state — lost on process restart (per D-02)
-_health: dict[str, Optional[dict]] = {
+_health: dict[str, Optional[Union[dict, bool]]] = {
     "yad2": None,
     "madlan": None,
+    "facebook_groups": None,
+    "facebook_marketplace": None,
+    "facebook_session_valid": None,  # shared bool field per D-12
 }
 
 
@@ -91,6 +94,84 @@ async def run_madlan_scrape_job() -> None:
     }
     logger.info(
         "Madlan scrape job completed: found=%d inserted=%d success=%s",
+        result.listings_found,
+        result.listings_inserted,
+        result.success,
+    )
+
+
+async def run_facebook_groups_scrape_job() -> None:
+    """APScheduler job: run Facebook Groups scraper → geocoding pass → dedup pass → notify."""
+    from app.database import async_session_factory
+    from app.geocoding import run_dedup_pass, run_geocoding_pass
+    from app.notifier import run_notification_job  # deferred import
+    from app.scrapers.facebook_groups import run_facebook_groups_scraper
+
+    started_at = datetime.now(timezone.utc)
+    logger.info("Facebook Groups scrape job started")
+    try:
+        async with async_session_factory() as session:
+            result: ScraperResult = await run_facebook_groups_scraper(session)
+            await run_geocoding_pass(session)
+            await run_dedup_pass(session)
+            await run_notification_job(session, started_at)
+    except Exception as exc:
+        logger.exception("Facebook Groups scrape job failed: %s", exc)
+        result = ScraperResult(source="facebook_groups", success=False, errors=[str(exc)])
+
+    _health["facebook_groups"] = {
+        "last_run": started_at.isoformat(),
+        "listings_found": result.listings_found,
+        "listings_inserted": result.listings_inserted,
+        "listings_rejected": result.listings_rejected,
+        "listings_flagged": result.listings_flagged,
+        "success": result.success,
+        "errors": result.errors,
+    }
+    # Update shared session validity from result errors (D-12)
+    _health["facebook_session_valid"] = not any("session_expired" in e for e in result.errors)
+
+    logger.info(
+        "Facebook Groups scrape job completed: found=%d inserted=%d success=%s",
+        result.listings_found,
+        result.listings_inserted,
+        result.success,
+    )
+
+
+async def run_facebook_marketplace_scrape_job() -> None:
+    """APScheduler job: run Facebook Marketplace scraper → geocoding pass → dedup pass → notify."""
+    from app.database import async_session_factory
+    from app.geocoding import run_dedup_pass, run_geocoding_pass
+    from app.notifier import run_notification_job  # deferred import
+    from app.scrapers.facebook_marketplace import run_facebook_marketplace_scraper
+
+    started_at = datetime.now(timezone.utc)
+    logger.info("Facebook Marketplace scrape job started")
+    try:
+        async with async_session_factory() as session:
+            result: ScraperResult = await run_facebook_marketplace_scraper(session)
+            await run_geocoding_pass(session)
+            await run_dedup_pass(session)
+            await run_notification_job(session, started_at)
+    except Exception as exc:
+        logger.exception("Facebook Marketplace scrape job failed: %s", exc)
+        result = ScraperResult(source="facebook_marketplace", success=False, errors=[str(exc)])
+
+    _health["facebook_marketplace"] = {
+        "last_run": started_at.isoformat(),
+        "listings_found": result.listings_found,
+        "listings_inserted": result.listings_inserted,
+        "listings_rejected": result.listings_rejected,
+        "listings_flagged": result.listings_flagged,
+        "success": result.success,
+        "errors": result.errors,
+    }
+    # Update shared session validity from result errors (D-12)
+    _health["facebook_session_valid"] = not any("session_expired" in e for e in result.errors)
+
+    logger.info(
+        "Facebook Marketplace scrape job completed: found=%d inserted=%d success=%s",
         result.listings_found,
         result.listings_inserted,
         result.success,
