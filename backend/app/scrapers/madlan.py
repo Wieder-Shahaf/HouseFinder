@@ -919,7 +919,7 @@ async def run_madlan_scraper(db: AsyncSession) -> ScraperResult:
         feed_items = await fetch_madlan_graphql(
             max_pages=settings.madlan_graphql_max_pages,
             page_size=50,
-            cutoff_hours=settings.scrape_interval_hours * 2,
+            cutoff_hours=168,  # always fetch last 7 days; DB dedup handles repeats
         )
         logger.info(f"[madlan] GraphQL: {len(feed_items)} Haifa rental items fetched")
 
