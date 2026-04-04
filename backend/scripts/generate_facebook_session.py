@@ -92,7 +92,21 @@ async def main():
         await page.wait_for_selector(email_sel, timeout=15_000)
         await page.fill(email_sel, email)
         await page.fill(pass_sel, password)
-        await page.click("button[name='login'], [data-testid='royal_login_button'], button[type='submit']")
+
+        # Submit via JS to bypass any overlaying cookie dialog
+        submitted = await page.evaluate("""
+            () => {
+                const form = document.querySelector('form#login_form, form[action*="login"]');
+                if (form) { form.submit(); return true; }
+                const btn = document.querySelector('button[name="login"], #loginbutton, button[type="submit"]');
+                if (btn) { btn.click(); return true; }
+                return false;
+            }
+        """)
+        if not submitted:
+            # Last resort: press Enter on the password field
+            await page.focus(pass_sel)
+            await page.keyboard.press("Enter")
 
         # Wait up to 30s for redirect away from /login — indicates success or 2FA
         try:
