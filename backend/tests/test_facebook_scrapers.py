@@ -519,3 +519,195 @@ async def test_marketplace_failure_isolation(db_session, tmp_path):
     assert result.success is False, f"Expected success=False, got {result.success}"
     assert len(result.errors) > 0, "Expected errors list to be non-empty"
     assert result.source == MARKETPLACE_SOURCE
+
+
+# ===========================================================================
+# Plan 03 — Scheduler wiring + health endpoint integration tests
+# ===========================================================================
+
+
+def test_scheduler_health_keys():
+    """Plan 03: _health dict contains facebook_groups, facebook_marketplace, and
+    facebook_session_valid keys after scheduler.py changes."""
+    from app.scheduler import _health
+    assert "facebook_groups" in _health
+    assert "facebook_marketplace" in _health
+    assert "facebook_session_valid" in _health
+
+
+@pytest.mark.asyncio
+async def test_scheduler_health_updated():
+    """Plan 03: After run_facebook_groups_scrape_job executes (mocked), _health["facebook_groups"]
+    is a dict with keys last_run, listings_found, listings_inserted, success, errors."""
+    from app.scheduler import run_facebook_groups_scrape_job, _health
+    from app.scrapers.base import ScraperResult
+
+    mock_result = ScraperResult(
+        source="facebook_groups",
+        listings_found=5,
+        listings_inserted=3,
+        success=True,
+    )
+    _health["facebook_groups"] = None
+
+    with (
+        patch("app.database.async_session_factory") as mock_factory,
+        patch("app.scrapers.facebook_groups.run_facebook_groups_scraper", new_callable=AsyncMock, return_value=mock_result),
+        patch("app.geocoding.run_geocoding_pass", new_callable=AsyncMock),
+        patch("app.geocoding.run_dedup_pass", new_callable=AsyncMock),
+        patch("app.notifier.run_notification_job", new_callable=AsyncMock),
+    ):
+        mock_ctx = AsyncMock()
+        mock_ctx.__aenter__ = AsyncMock(return_value=AsyncMock())
+        mock_ctx.__aexit__ = AsyncMock(return_value=False)
+        mock_factory.return_value = mock_ctx
+        await run_facebook_groups_scrape_job()
+
+    assert _health["facebook_groups"] is not None
+    assert _health["facebook_groups"]["listings_found"] == 5
+    assert _health["facebook_groups"]["success"] is True
+    assert "last_run" in _health["facebook_groups"]
+    assert "listings_inserted" in _health["facebook_groups"]
+    assert "errors" in _health["facebook_groups"]
+    # Reset
+    _health["facebook_groups"] = None
+
+
+@pytest.mark.asyncio
+async def test_scheduler_session_valid_updated():
+    """Plan 03: After a job with session_expired error, _health["facebook_session_valid"] is False;
+    after a clean run, it is True."""
+    from app.scheduler import run_facebook_groups_scrape_job, _health
+    from app.scrapers.base import ScraperResult
+
+    # Run with session_expired error — should set session_valid to False
+    expired_result = ScraperResult(
+        source="facebook_groups",
+        success=True,
+        errors=["session_expired: Facebook session requires re-authentication"],
+    )
+    _health["facebook_session_valid"] = None
+
+    with (
+        patch("app.database.async_session_factory") as mock_factory,
+        patch("app.scrapers.facebook_groups.run_facebook_groups_scraper", new_callable=AsyncMock, return_value=expired_result),
+        patch("app.geocoding.run_geocoding_pass", new_callable=AsyncMock),
+        patch("app.geocoding.run_dedup_pass", new_callable=AsyncMock),
+        patch("app.notifier.run_notification_job", new_callable=AsyncMock),
+    ):
+        mock_ctx = AsyncMock()
+        mock_ctx.__aenter__ = AsyncMock(return_value=AsyncMock())
+        mock_ctx.__aexit__ = AsyncMock(return_value=False)
+        mock_factory.return_value = mock_ctx
+        await run_facebook_groups_scrape_job()
+
+    assert _health["facebook_session_valid"] is False
+
+    # Run with clean result — should set session_valid to True
+    clean_result = ScraperResult(
+        source="facebook_groups",
+        listings_found=2,
+        listings_inserted=2,
+        success=True,
+        errors=[],
+    )
+    with (
+        patch("app.database.async_session_factory") as mock_factory2,
+        patch("app.scrapers.facebook_groups.run_facebook_groups_scraper", new_callable=AsyncMock, return_value=clean_result),
+        patch("app.geocoding.run_geocoding_pass", new_callable=AsyncMock),
+        patch("app.geocoding.run_dedup_pass", new_callable=AsyncMock),
+        patch("app.notifier.run_notification_job", new_callable=AsyncMock),
+    ):
+        mock_ctx2 = AsyncMock()
+        mock_ctx2.__aenter__ = AsyncMock(return_value=AsyncMock())
+        mock_ctx2.__aexit__ = AsyncMock(return_value=False)
+        mock_factory2.return_value = mock_ctx2
+        await run_facebook_groups_scrape_job()
+
+    assert _health["facebook_session_valid"] is True
+    # Reset
+    _health["facebook_groups"] = None
+    _health["facebook_session_valid"] = None
+
+
+@pytest.mark.asyncio
+async def test_health_endpoint_facebook(client):
+    """Plan 03: GET /api/health returns facebook_groups and facebook_marketplace in scrapers dict
+    and facebook_session_valid at top level."""
+    from app.scheduler import _health
+
+    # Ensure clean state
+    _health["facebook_groups"] = None
+    _health["facebook_marketplace"] = None
+    _health["facebook_session_valid"] = None
+
+    response = await client.get("/api/health")
+    assert response.status_code == 200
+    data = response.json()
+    assert "facebook_groups" in data["scrapers"]
+    assert "facebook_marketplace" in data["scrapers"]
+    assert "facebook_session_valid" in data
+    # Reset
+    _health["facebook_groups"] = None
+    _health["facebook_marketplace"] = None
+    _health["facebook_session_valid"] = None
+
+
+@pytest.mark.asyncio
+async def test_jobs_independent():
+    """Plan 03 / D-10: run_facebook_groups_scrape_job failure does not prevent
+    run_facebook_marketplace_scrape_job from running and updating _health."""
+    from app.scheduler import (
+        run_facebook_groups_scrape_job,
+        run_facebook_marketplace_scrape_job,
+        _health,
+    )
+    from app.scrapers.base import ScraperResult
+
+    _health["facebook_groups"] = None
+    _health["facebook_marketplace"] = None
+
+    marketplace_result = ScraperResult(
+        source="facebook_marketplace",
+        listings_found=3,
+        listings_inserted=3,
+        success=True,
+    )
+
+    # Groups job raises; marketplace job should still succeed
+    with (
+        patch("app.database.async_session_factory") as mock_factory,
+        patch("app.scrapers.facebook_groups.run_facebook_groups_scraper", new_callable=AsyncMock, side_effect=RuntimeError("groups crashed")),
+        patch("app.geocoding.run_geocoding_pass", new_callable=AsyncMock),
+        patch("app.geocoding.run_dedup_pass", new_callable=AsyncMock),
+        patch("app.notifier.run_notification_job", new_callable=AsyncMock),
+    ):
+        mock_ctx = AsyncMock()
+        mock_ctx.__aenter__ = AsyncMock(return_value=AsyncMock())
+        mock_ctx.__aexit__ = AsyncMock(return_value=False)
+        mock_factory.return_value = mock_ctx
+        await run_facebook_groups_scrape_job()
+
+    assert _health["facebook_groups"] is not None
+    assert _health["facebook_groups"]["success"] is False
+
+    with (
+        patch("app.database.async_session_factory") as mock_factory2,
+        patch("app.scrapers.facebook_marketplace.run_facebook_marketplace_scraper", new_callable=AsyncMock, return_value=marketplace_result),
+        patch("app.geocoding.run_geocoding_pass", new_callable=AsyncMock),
+        patch("app.geocoding.run_dedup_pass", new_callable=AsyncMock),
+        patch("app.notifier.run_notification_job", new_callable=AsyncMock),
+    ):
+        mock_ctx2 = AsyncMock()
+        mock_ctx2.__aenter__ = AsyncMock(return_value=AsyncMock())
+        mock_ctx2.__aexit__ = AsyncMock(return_value=False)
+        mock_factory2.return_value = mock_ctx2
+        await run_facebook_marketplace_scrape_job()
+
+    assert _health["facebook_marketplace"] is not None
+    assert _health["facebook_marketplace"]["success"] is True
+    assert _health["facebook_marketplace"]["listings_found"] == 3
+    # Reset
+    _health["facebook_groups"] = None
+    _health["facebook_marketplace"] = None
+    _health["facebook_session_valid"] = None
