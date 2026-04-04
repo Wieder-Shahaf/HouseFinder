@@ -47,19 +47,33 @@ async def main():
         await page.screenshot(path="/tmp/fb_login_page.png")
         print("Screenshot saved.")
 
-        # Fill credentials
+        # Fill credentials via JS — bypasses any overlay intercepting pointer events
         email_sel = "input[name='email']"
-        pass_sel = "input[name='pass']"
         await page.wait_for_selector(email_sel, timeout=15_000)
-        await page.click(email_sel)
-        await page.fill(email_sel, email)
-        await page.fill(pass_sel, password)
+
+        await page.evaluate(f"""
+            () => {{
+                const email = document.querySelector("input[name='email']");
+                const pass = document.querySelector("input[name='pass']");
+                const nativeInput = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+                nativeInput.call(email, {repr(email)});
+                email.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                nativeInput.call(pass, {repr(password)});
+                pass.dispatchEvent(new Event('input', {{ bubbles: true }}));
+            }}
+        """)
+        print("Credentials filled via JS.")
 
         await page.screenshot(path="/tmp/fb_filled.png")
-        print("Credentials filled. Submitting ...")
 
-        # Submit
-        await page.keyboard.press("Enter")
+        # Submit the form directly
+        await page.evaluate("""
+            () => {
+                const form = document.querySelector('form#login_form, form[action*="login"]');
+                if (form) { form.submit(); return; }
+                document.querySelector("input[name='pass']").form.submit();
+            }
+        """)
 
         # Wait for redirect away from login
         try:
