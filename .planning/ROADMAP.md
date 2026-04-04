@@ -21,7 +21,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: Geocoding + Dedup + Neighborhoods** - Nominatim geocoding, cross-source dedup, neighborhood tagging (completed 2026-04-02)
 - [x] **Phase 6: Madlan Scraper** - Second structured source via Playwright + stealth (completed 2026-04-03)
 - [x] **Phase 7: Notifications** - Web Push notifications on new listings (WhatsApp stub deferred) (completed 2026-04-03)
-- [ ] **Phase 8: Facebook Scrapers** - Groups and Marketplace with session management
+- [x] **Phase 8: Facebook Scrapers** - Groups and Marketplace with session management (completed 2026-04-04)
 
 ## Phase Details
 
@@ -144,7 +144,7 @@ Plans:
 Plans:
 - [x] 08-01-PLAN.md — Facebook Groups scraper: shared session infrastructure + group extraction + tests (FBGR-01, FBGR-02, FBGR-03, FBGR-04, FBGR-05)
 - [x] 08-02-PLAN.md — Facebook Marketplace scraper: listing card extraction + tests (FBMP-01, FBMP-02, FBMP-03, FBMP-04)
-- [ ] 08-03-PLAN.md — Scheduler integration: APScheduler jobs + health endpoint + login script (all FB requirements)
+- [x] 08-03-PLAN.md — Scheduler integration: APScheduler jobs + health endpoint + login script (all FB requirements)
 **Research flag**: Facebook DOM structure, group access policies, and stealth effectiveness evolve continuously. Run a targeted research pass immediately before implementation. Ensure the scraper Facebook account has Haifa set as home city and the server is on an Israeli IP before any testing.
 
 ## Progress
@@ -161,4 +161,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 5. Geocoding + Dedup + Neighborhoods | 3/3 | Complete   | 2026-04-02 |
 | 6. Madlan Scraper | 1/1 | Complete   | 2026-04-03 |
 | 7. Notifications | 2/2 | Complete   | 2026-04-03 |
-| 8. Facebook Scrapers | 2/3 | In Progress|  |
+| 8. Facebook Scrapers | 3/3 | Complete   | 2026-04-04 |

@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 08-02 (Facebook Marketplace Scraper) — scraper module, session reuse from Plan 01, card extraction, 7 unit tests
-last_updated: "2026-04-04T12:52:18.233Z"
+status: verifying
+stopped_at: Completed 08-03 (Scheduler Integration) — both Facebook scrapers wired as APScheduler jobs, health endpoint updated, login script created, 5 integration tests
+last_updated: "2026-04-04T12:58:14.517Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 8
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 22
-  completed_plans: 21
+  completed_plans: 22
   percent: 67
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 
 Phase: 08 (facebook-scrapers) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-04
 
 Progress: [██████░░░░] 67%
@@ -70,6 +70,7 @@ Progress: [██████░░░░] 67%
 | Phase 07-notifications P02 | 2 | 1 tasks | 5 files |
 | Phase 08-facebook-scrapers P01 | 4min | 2 tasks | 4 files |
 | Phase 08-facebook-scrapers P02 | 2min | 2 tasks | 2 files |
+| Phase 08-facebook-scrapers P03 | 4min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -122,6 +123,8 @@ Recent decisions affecting current work:
 - [Phase 08-facebook-scrapers]: Session health check uses dual signals: URL contains login/checkpoint OR LeftRail element missing; source_id fallback = sha256[:32] of post_text[:200]
 - [Phase 08-facebook-scrapers]: MARKETPLACE_VERIFY_PROMPT is a local variant adapted for structured Marketplace card fields (title, price) plus optional free-form Hebrew description
 - [Phase 08-facebook-scrapers]: Marketplace source_id uses inline re.search(r'/item/(\d+)') — different URL pattern from Groups (/permalink/ vs /item/)
+- [Phase 08-facebook-scrapers]: facebook_session_valid is a shared bool at _health top level — updated by whichever Facebook job ran most recently (D-12)
+- [Phase 08-facebook-scrapers]: Both Facebook jobs fire immediately on startup via next_run_time=now — consistent with Yad2/Madlan pattern
 
 ### Pending Todos
 
@@ -144,6 +147,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-04T12:52:18.230Z
-Stopped at: Completed 08-02 (Facebook Marketplace Scraper) — scraper module, session reuse from Plan 01, card extraction, 7 unit tests
+Last session: 2026-04-04T12:58:14.515Z
+Stopped at: Completed 08-03 (Scheduler Integration) — both Facebook scrapers wired as APScheduler jobs, health endpoint updated, login script created, 5 integration tests
 Resume file: None
