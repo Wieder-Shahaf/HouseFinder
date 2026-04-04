@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: Completed 07-02 (Frontend Push Notification Pipeline) — Service worker, PWA manifest, and push subscription hook complete
-last_updated: "2026-04-03T16:16:36.259Z"
-last_activity: 2026-04-03
+status: executing
+stopped_at: Completed 08-01 (Facebook Groups Scraper) — scraper module, session management, LLM verification pipeline, 16 unit tests
+last_updated: "2026-04-04T12:47:55.245Z"
+last_activity: 2026-04-04
 progress:
   total_phases: 8
   completed_phases: 7
-  total_plans: 19
-  completed_plans: 19
+  total_plans: 22
+  completed_plans: 20
   percent: 67
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** New Haifa rental listings from all sources appear on a single live map every morning — no manual searching required.
-**Current focus:** Phase 07 — notifications
+**Current focus:** Phase 08 — facebook-scrapers
 
 ## Current Position
 
-Phase: 07 (notifications) — EXECUTING
-Plan: 2 of 2
-Status: Phase complete — ready for verification
-Last activity: 2026-04-03
+Phase: 08 (facebook-scrapers) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-04-04
 
 Progress: [██████░░░░] 67%
 
@@ -68,6 +68,7 @@ Progress: [██████░░░░] 67%
 | Phase 06-madlan-scraper P01 | 21 | 2 tasks | 5 files |
 | Phase 07-notifications P01 | 15 | 2 tasks | 11 files |
 | Phase 07-notifications P02 | 2 | 1 tasks | 5 files |
+| Phase 08-facebook-scrapers P01 | 4min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -115,6 +116,9 @@ Recent decisions affecting current work:
 - [Phase 07-notifications]: VAPID public key fetched from backend GET /api/push/vapid-public-key at subscription time — avoids frontend env var requirement
 - [Phase 07-notifications]: iOS Web Push requires manifest.json display:standalone — critical for iOS 16.4+ push support
 - [Phase 07-notifications]: dir:rtl and lang:he set in SW notification options for correct Hebrew text rendering in browser notification UI
+- [Phase 08-facebook-scrapers]: Facebook Groups scraper uses headless=True in Docker; production VPS needs headless=False + Xvfb for stealth against bot detection
+- [Phase 08-facebook-scrapers]: FACEBOOK_VERIFY_PROMPT is a local copy of VERIFY_PROMPT adapted for informal Facebook posts — avoids coupling to verifier.py Yad2-specific prompt
+- [Phase 08-facebook-scrapers]: Session health check uses dual signals: URL contains login/checkpoint OR LeftRail element missing; source_id fallback = sha256[:32] of post_text[:200]
 
 ### Pending Todos
 
@@ -137,6 +141,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-03T16:16:36.256Z
-Stopped at: Completed 07-02 (Frontend Push Notification Pipeline) — Service worker, PWA manifest, and push subscription hook complete
+Last session: 2026-04-04T12:47:55.243Z
+Stopped at: Completed 08-01 (Facebook Groups Scraper) — scraper module, session management, LLM verification pipeline, 16 unit tests
 Resume file: None
