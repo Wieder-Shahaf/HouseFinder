@@ -134,6 +134,7 @@ async def fetch_madlan_browser(url: str) -> list[dict]:
             locale="he-IL",
             viewport={"width": 1280, "height": 800},
             extra_http_headers={"Accept-Language": "he-IL,he;q=0.9"},
+            ignore_https_errors=True,  # Bright Data Web Unlocker does MITM SSL interception
             **get_proxy_launch_args(),
         )
         page = await context.new_page()
@@ -173,7 +174,7 @@ async def fetch_madlan_browser(url: str) -> list[dict]:
 
         logger.warning(f"[madlan] Navigating to: {url}")
         try:
-            resp = await page.goto(url, wait_until="domcontentloaded", timeout=60000)
+            resp = await page.goto(url, wait_until="load", timeout=60000)
             logger.warning(f"[madlan] goto returned status={resp.status if resp else 'None'}, url={page.url}")
         except Exception as nav_err:
             logger.error(f"[madlan] goto failed: {nav_err}")
@@ -647,10 +648,11 @@ async def run_madlan_scraper(db: AsyncSession) -> ScraperResult:
 
     try:
         # Build URL: Madlan Haifa rental page with price filter
+        # Keep https:// — Bright Data Web Unlocker handles SSL via MITM interception.
+        # ignore_https_errors=True is set on the browser context to accept the proxy cert.
         url = settings.madlan_base_url
         if is_proxy_enabled():
-            url = url.replace("https://", "http://", 1)
-            logger.info("[madlan] Proxy active — using http:// scheme for Web Unlocker")
+            logger.info("[madlan] Proxy active — using https:// with ignore_https_errors")
 
         # Step 1: Fetch listings via Playwright
         feed_items = await fetch_madlan_browser(url)
