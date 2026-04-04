@@ -1,17 +1,18 @@
 """LLM verification pipeline for apartment rental listings.
 
-Verifies each listing is a genuine rental using Claude Haiku, extracts and
+Verifies listings are genuine rentals using Claude Haiku, extracts and
 normalizes structured fields from Hebrew text, and assigns confidence scores.
 
+All listings are sent in a single API call (batch prompt) to avoid rate limits.
+
 Exports:
-    verify_listing        — single listing verification
-    batch_verify_listings — concurrent batch verification via asyncio.gather
+    verify_listing        — single listing verification (wraps batch)
+    batch_verify_listings — single-call batch verification
     merge_llm_fields      — merge LLM-extracted fields with scraper fields
-    LISTING_SCHEMA        — JSON Schema for structured output
+    LISTING_SCHEMA        — JSON Schema for a single listing result
     VERIFY_PROMPT         — Hebrew-aware prompt template
 """
 
-import asyncio
 import json
 import logging
 from typing import Any
@@ -23,7 +24,7 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# JSON Schema for structured output — Anthropic output_config.format
+# JSON Schema for structured output
 # ---------------------------------------------------------------------------
 
 LISTING_SCHEMA: dict[str, Any] = {
@@ -51,32 +52,43 @@ LISTING_SCHEMA: dict[str, Any] = {
     "additionalProperties": False,
 }
 
+_BATCH_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "results": {
+            "type": "array",
+            "items": LISTING_SCHEMA,
+        }
+    },
+    "required": ["results"],
+    "additionalProperties": False,
+}
+
 # ---------------------------------------------------------------------------
-# Prompt
+# Prompts
 # ---------------------------------------------------------------------------
 
-VERIFY_PROMPT = """You are analyzing a Hebrew real estate listing from Yad2 (יד2).
+VERIFY_PROMPT = """You are analyzing Hebrew real estate listings. For each numbered listing below, determine if it is a genuine RENTAL listing and extract structured fields.
 
-Determine if this is a genuine RENTAL listing. Reject if it is:
+Reject a listing if it is:
 - A "looking for apartment" post (מחפש/ה דירה)
 - A sale listing (למכירה / מכירה)
 - Spam, advertising, or unrelated content
 - A roommate search (שותף/ה)
 
-If it IS a rental listing, extract these fields:
+For each listing extract:
 - price: Monthly rent in ILS (integer, no currency symbol)
 - rooms: Number of rooms (float, e.g., 2.5, 3, 3.5)
 - size_sqm: Apartment size in square meters (integer)
 - address: Full address in Hebrew (street, neighborhood, city)
 - contact_info: Contact name and/or phone number
 
-Set confidence (0.0-1.0) based on how clearly the text identifies as a rental \
-and how many fields you could extract. High confidence (>0.8) means clear rental \
-with most fields extractable. Low confidence (<0.5) means ambiguous text or very \
-few fields found.
+Set confidence (0.0-1.0) per listing based on how clearly it identifies as a rental and how many fields you could extract.
 
-Listing text:
-{text}"""
+Return a JSON object with a "results" array containing one object per listing in the same order.
+
+Listings:
+{listings}"""
 
 # ---------------------------------------------------------------------------
 # Client factory — extracted for easy mocking in tests
@@ -89,7 +101,48 @@ def get_llm_client() -> anthropic.AsyncAnthropic:
 
 
 # ---------------------------------------------------------------------------
-# Core verification function
+# Token budget constants — prevent exceeding model context window
+# ---------------------------------------------------------------------------
+
+_MODEL_CONTEXT_TOKENS = 200_000  # claude-haiku-4-5 context window
+_INPUT_TOKEN_BUDGET = _MODEL_CONTEXT_TOKENS // 2  # use at most 50% for input
+_MAX_OUTPUT_TOKENS = 8_192  # Haiku max output tokens
+_PROMPT_OVERHEAD_TOKENS = 400  # prompt template + formatting overhead
+_CHARS_PER_TOKEN = 4  # rough approximation (Hebrew text ~3-5 chars/token)
+
+
+def _estimate_tokens(text: str) -> int:
+    return max(1, len(text) // _CHARS_PER_TOKEN)
+
+
+def _chunk_listings(texts: list[str]) -> list[list[str]]:
+    """Split listings into chunks that each fit within the input token budget.
+
+    Listings are never split across chunks. Each chunk uses at most
+    _INPUT_TOKEN_BUDGET - _PROMPT_OVERHEAD_TOKENS tokens.
+    """
+    available = _INPUT_TOKEN_BUDGET - _PROMPT_OVERHEAD_TOKENS
+    chunks: list[list[str]] = []
+    current: list[str] = []
+    current_tokens = 0
+
+    for text in texts:
+        tokens = _estimate_tokens(text)
+        if current and current_tokens + tokens > available:
+            chunks.append(current)
+            current = []
+            current_tokens = 0
+        current.append(text)
+        current_tokens += tokens
+
+    if current:
+        chunks.append(current)
+
+    return chunks
+
+
+# ---------------------------------------------------------------------------
+# Rejection template
 # ---------------------------------------------------------------------------
 
 _REJECTION_TEMPLATE: dict[str, Any] = {
@@ -104,93 +157,82 @@ _REJECTION_TEMPLATE: dict[str, Any] = {
 }
 
 
-async def verify_listing(raw_text: str) -> dict[str, Any]:
-    """Verify a single listing via Claude and extract structured fields.
+async def _call_llm_batch(client: anthropic.AsyncAnthropic, texts: list[str]) -> list[dict[str, Any]]:
+    """Make a single LLM API call for a chunk of listings."""
+    n = len(texts)
+    numbered = "\n\n".join(f"[{i + 1}]\n{text}" for i, text in enumerate(texts))
 
-    Args:
-        raw_text: Hebrew-language listing text to verify and extract from.
-
-    Returns:
-        Dict with keys: is_rental, rejection_reason, confidence, price,
-        rooms, size_sqm, address, contact_info.
-        On LLM error, returns a rejection dict with is_rental=False and an
-        error message in rejection_reason.
-    """
     try:
-        client = get_llm_client()
         response = await client.messages.create(
             model=settings.llm_model,
-            max_tokens=512,
-            messages=[
-                {"role": "user", "content": VERIFY_PROMPT.format(text=raw_text)}
-            ],
+            max_tokens=min(512 * n, _MAX_OUTPUT_TOKENS),
+            messages=[{"role": "user", "content": VERIFY_PROMPT.format(listings=numbered)}],
             output_config={
                 "format": {
                     "type": "json_schema",
-                    "schema": LISTING_SCHEMA,
+                    "schema": _BATCH_SCHEMA,
                 }
             },
         )
-        return json.loads(response.content[0].text)
+        batch = json.loads(response.content[0].text)
+        raw: list[Any] = batch.get("results", [])
+        while len(raw) < n:
+            raw.append({**_REJECTION_TEMPLATE, "rejection_reason": "missing from LLM batch response"})
+        return raw[:n]
     except Exception as e:
-        logger.error("[llm] verify_listing error: %s", e)
-        return {
-            **_REJECTION_TEMPLATE,
-            "rejection_reason": f"LLM error: {e}",
-        }
+        logger.error("[llm] _call_llm_batch error: %s", e)
+        return [{**_REJECTION_TEMPLATE, "rejection_reason": f"LLM error: {e}"} for _ in texts]
 
 
 # ---------------------------------------------------------------------------
-# Batch verification
+# Batch verification — chunked API calls, listings never split
 # ---------------------------------------------------------------------------
 
 
 async def batch_verify_listings(raw_texts: list[str]) -> list[dict[str, Any]]:
-    """Verify a batch of listings concurrently using asyncio.gather.
+    """Verify all listings, chunked to stay within 50% of the model context window.
 
-    Per D-03: runs after the full scrape batch, not per-listing during scrape.
-    Uses return_exceptions=True so a single failure does not abort the batch.
+    Each chunk is a single API call. Listings are never split across chunks.
+    Falls back to rejecting the chunk on error without affecting other chunks.
 
     Args:
         raw_texts: List of Hebrew listing texts to verify.
 
     Returns:
-        List of result dicts (same length as input). Exceptions are converted
-        to rejection dicts with the error message in rejection_reason.
+        List of result dicts (same length as input).
     """
     n = len(raw_texts)
-    logger.info("[llm] Verifying %d listings with %s", n, settings.llm_model)
+    if n == 0:
+        return []
 
-    raw_results = await asyncio.gather(
-        *[verify_listing(t) for t in raw_texts],
-        return_exceptions=True,
-    )
-
-    results: list[dict[str, Any]] = []
-    accepted = rejected = flagged = 0
-
-    for item in raw_results:
-        if isinstance(item, Exception):
-            results.append(
-                {
-                    **_REJECTION_TEMPLATE,
-                    "rejection_reason": f"LLM error: {item}",
-                }
-            )
-            rejected += 1
-        else:
-            results.append(item)
-            if not item.get("is_rental", False):
-                rejected += 1
-            elif item.get("confidence", 0.0) < settings.llm_confidence_threshold:
-                flagged += 1
-            else:
-                accepted += 1
-
+    chunks = _chunk_listings(raw_texts)
     logger.info(
-        "[llm] %d accepted, %d rejected, %d flagged", accepted, rejected, flagged
+        "[llm] Verifying %d listings in %d chunk(s) (%s)",
+        n, len(chunks), settings.llm_model,
     )
-    return results
+
+    client = get_llm_client()
+    all_results: list[dict[str, Any]] = []
+    for chunk in chunks:
+        all_results.extend(await _call_llm_batch(client, chunk))
+
+    accepted = rejected = flagged = 0
+    for item in all_results:
+        if not item.get("is_rental", False):
+            rejected += 1
+        elif item.get("confidence", 0.0) < settings.llm_confidence_threshold:
+            flagged += 1
+        else:
+            accepted += 1
+
+    logger.info("[llm] %d accepted, %d rejected, %d flagged", accepted, rejected, flagged)
+    return all_results
+
+
+async def verify_listing(raw_text: str) -> dict[str, Any]:
+    """Verify a single listing. Wraps batch_verify_listings for convenience."""
+    results = await batch_verify_listings([raw_text])
+    return results[0]
 
 
 # ---------------------------------------------------------------------------

@@ -11,10 +11,19 @@ pytest.importorskip("app.llm.verifier")
 
 
 def make_mock_response(data: dict):
-    """Create a mock Anthropic response object."""
+    """Create a mock Anthropic response object for a single listing (wraps in batch envelope)."""
     mock_response = MagicMock()
     mock_content = MagicMock()
-    mock_content.text = json.dumps(data)
+    mock_content.text = json.dumps({"results": [data]})
+    mock_response.content = [mock_content]
+    return mock_response
+
+
+def make_batch_mock_response(data_list: list):
+    """Create a mock Anthropic response object for multiple listings."""
+    mock_response = MagicMock()
+    mock_content = MagicMock()
+    mock_content.text = json.dumps({"results": data_list})
     mock_response.content = [mock_content]
     return mock_response
 
@@ -111,18 +120,17 @@ async def test_llm_fields_supplement_scraper_fields(
 
 @pytest.mark.asyncio
 @patch("app.llm.verifier.get_llm_client")
-async def test_batch_verify_uses_gather(mock_get_client, llm_valid_rental_response):
-    """LLM-05: The batch verification function must issue concurrent Anthropic
-    API calls using asyncio.gather (or equivalent), not sequential awaits.
-    Concurrent execution is required for acceptable throughput when verifying
-    multiple listings per scrape run.
+async def test_batch_verify_uses_single_call(mock_get_client, llm_valid_rental_response):
+    """LLM-05: The batch verification function must send all listings in a single
+    API call to stay within rate limits. One call for N listings, not N calls.
     """
     call_count = 0
 
     async def fake_create(**kwargs):
         nonlocal call_count
         call_count += 1
-        return make_mock_response(llm_valid_rental_response)
+        n = len(kwargs.get("messages", [{}])[0].get("content", "").split("[")) - 1
+        return make_batch_mock_response([llm_valid_rental_response] * max(n, 3))
 
     mock_client = AsyncMock()
     mock_client.messages.create = fake_create
@@ -134,8 +142,7 @@ async def test_batch_verify_uses_gather(mock_get_client, llm_valid_rental_respon
     results = await batch_verify_listings(texts)
 
     assert len(results) == 3
-    assert call_count == 3
-    # All results should be dicts (not exceptions)
+    assert call_count == 1  # single API call for all listings
     for r in results:
         assert isinstance(r, dict)
 
