@@ -46,5 +46,8 @@ class Settings(BaseSettings):
     vapid_private_key: str = ""
     vapid_contact_email: str = "admin@localhost"
 
+    # Facebook scraper settings (Phase 8)
+    facebook_session_path: str = "/data/facebook_session.json"
+
 
 settings = Settings()

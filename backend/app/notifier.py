@@ -111,6 +111,37 @@ async def run_notification_job(session: AsyncSession, run_start_time: datetime) 
     logger.info("Notification job: stamped notified_at on listing IDs %s", listing_ids)
 
 
+async def send_session_expiry_alert() -> None:
+    """Send Web Push alert when Facebook session expires (D-07).
+
+    Hebrew notification:
+      Title: "פייסבוק דורש התחברות מחדש"
+      Body: "לגתי לדף הכניסה, סריקת קבוצות דולגה"
+    """
+    try:
+        subscription_raw = SUBSCRIPTION_FILE.read_text(encoding="utf-8")
+        subscription = json.loads(subscription_raw)
+    except (FileNotFoundError, Exception) as exc:
+        logger.warning("Session expiry alert: no push subscription — %s", exc)
+        return
+
+    payload = {
+        "title": "פייסבוק דורש התחברות מחדש",
+        "body": "לגתי לדף הכניסה, סריקת קבוצות דולגה",
+        "url": settings.app_url,
+    }
+    try:
+        webpush(
+            subscription_info=subscription,
+            data=json.dumps(payload, ensure_ascii=False),
+            vapid_private_key=settings.vapid_private_key,
+            vapid_claims={"sub": f"mailto:{settings.vapid_contact_email}"},
+        )
+        logger.info("Session expiry alert: push sent successfully")
+    except WebPushException as exc:
+        logger.error("Session expiry alert: webpush() failed — %s", exc)
+
+
 def send_whatsapp(
     count: int,
     url: str,
