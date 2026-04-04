@@ -140,7 +140,11 @@ Plans:
   2. The Facebook Marketplace scraper fetches Haifa rental listings independently from the Groups scraper using the same session
   3. A session health check runs before each Facebook scrape; if it detects a login redirect, a WhatsApp alert fires immediately and the scrape is skipped without error propagation
   4. A Facebook scraper failure (any error in Groups or Marketplace) does not block Yad2 or Madlan scrapers from completing their runs
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 08-01-PLAN.md — Facebook Groups scraper: shared session infrastructure + group extraction + tests (FBGR-01, FBGR-02, FBGR-03, FBGR-04, FBGR-05)
+- [ ] 08-02-PLAN.md — Facebook Marketplace scraper: listing card extraction + tests (FBMP-01, FBMP-02, FBMP-03, FBMP-04)
+- [ ] 08-03-PLAN.md — Scheduler integration: APScheduler jobs + health endpoint + login script (all FB requirements)
 **Research flag**: Facebook DOM structure, group access policies, and stealth effectiveness evolve continuously. Run a targeted research pass immediately before implementation. Ensure the scraper Facebook account has Haifa set as home city and the server is on an Israeli IP before any testing.
 
 ## Progress
@@ -157,4 +161,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 5. Geocoding + Dedup + Neighborhoods | 3/3 | Complete   | 2026-04-02 |
 | 6. Madlan Scraper | 1/1 | Complete   | 2026-04-03 |
 | 7. Notifications | 2/2 | Complete   | 2026-04-03 |
-| 8. Facebook Scrapers | 0/TBD | Not started | - |
+| 8. Facebook Scrapers | 0/3 | Not started | - |
