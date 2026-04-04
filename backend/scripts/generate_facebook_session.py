@@ -37,23 +37,26 @@ async def main():
             ignore_https_errors=True,
         )
         page = await context.new_page()
-        await page.goto("https://www.facebook.com/login/", wait_until="domcontentloaded", timeout=60_000)
+        await page.goto("https://www.facebook.com/login/", wait_until="networkidle", timeout=60_000)
+        await page.wait_for_timeout(2_000)  # let JS-rendered dialogs appear
         print(f"Page loaded: {page.url}")
 
-        # Remove the cookie consent overlay from the DOM entirely
-        removed = await page.evaluate("""
-            () => {
-                // The modal overlay that intercepts all pointer events
-                const overlay = document.querySelector('.x1n2onr6.x1vjfegm');
-                if (overlay) { overlay.remove(); return 'overlay'; }
-                // Fallback: remove any element with role="dialog"
-                const dialog = document.querySelector('[role="dialog"]');
-                if (dialog) { dialog.remove(); return 'dialog'; }
-                return null;
-            }
-        """)
-        print(f"Overlay removed: {removed}")
-        await page.wait_for_timeout(500)
+        # Wait for dialog to appear then remove it
+        try:
+            await page.wait_for_selector('[role="dialog"]', timeout=5_000)
+            removed = await page.evaluate("""
+                () => {
+                    document.querySelectorAll('[role="dialog"]').forEach(d => d.remove());
+                    document.querySelectorAll('.x1n2onr6.x1vjfegm').forEach(d => d.remove());
+                    // Also remove any fixed/sticky overlay divs
+                    document.querySelectorAll('div[style*="position: fixed"]').forEach(d => d.remove());
+                    return true;
+                }
+            """)
+            print("Dialog removed from DOM.")
+            await page.wait_for_timeout(500)
+        except Exception:
+            print("No dialog found — proceeding.")
 
         await page.screenshot(path="/tmp/fb_login_page.png")
         print("Screenshot saved.")
@@ -66,11 +69,13 @@ async def main():
             () => {{
                 const email = document.querySelector("input[name='email']");
                 const pass = document.querySelector("input[name='pass']");
-                const nativeInput = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-                nativeInput.call(email, {repr(email)});
+                const nativeSet = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+                nativeSet.call(email, {repr(email)});
                 email.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                nativeInput.call(pass, {repr(password)});
+                email.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                nativeSet.call(pass, {repr(password)});
                 pass.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                pass.dispatchEvent(new Event('change', {{ bubbles: true }}));
             }}
         """)
         print("Credentials filled via JS.")
