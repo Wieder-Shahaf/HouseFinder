@@ -23,7 +23,7 @@ New Haifa rental listings from all sources appear on a single live map every mor
 ### Active
 
 - [x] Periodic background scraping of Madlan (Validated in Phase 06: madlan-scraper)
-- [ ] Periodic background scraping of Facebook groups (user-defined list) and Facebook Marketplace
+- [x] Periodic background scraping of Facebook groups (user-defined list) and Facebook Marketplace (Validated in Phase 08: facebook-scrapers)
 - [ ] Listings stored in a database and deduplicated across sources
 - [ ] Default filters: rent up to 4,500 ₪/month, 2.5–3.5+ rooms
 - [ ] WhatsApp or push notification when a new listing is found
@@ -80,4 +80,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-03 — Phase 06 complete (Madlan Scraper — 3-strategy extractor with XHR interception + `__NEXT_DATA__` + DOM fallback, PerimeterX/Cloudflare bot detection handling, APScheduler integration, health endpoint, 8 unit tests)*
+*Last updated: 2026-04-04 — Phase 08 complete (Facebook Scrapers — Groups + Marketplace scrapers with Playwright stealth, shared session infrastructure, session-expiry WhatsApp alert, APScheduler integration, health endpoint, 28 unit tests. Target groups: 4 Haifa rental groups configured in /data/facebook_groups.json)*
