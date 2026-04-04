@@ -43,8 +43,16 @@ async def main():
         )
         page = await context.new_page()
         await page.goto("https://www.facebook.com/login/", wait_until="networkidle", timeout=60_000)
-        await page.screenshot(path="/tmp/fb_login_page.png")
         print(f"Page loaded: {page.url}")
+
+        # Dismiss cookie consent dialog if present
+        try:
+            accept_btn = page.locator("button:has-text('לאפשר את כל קובצי'), button:has-text('Allow all'), button:has-text('Accept all')")
+            await accept_btn.first.click(timeout=5_000)
+            print("Cookie dialog dismissed.")
+            await page.wait_for_timeout(1_000)
+        except Exception:
+            pass  # No cookie dialog — continue
 
         # Try multiple selectors — Facebook changes its DOM occasionally
         email_sel = "input[name='email'], #email, input[type='email']"
